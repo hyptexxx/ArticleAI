@@ -1,35 +1,38 @@
 <template lang="pug">
   <div>
-  input(v-model="language", type="text")
-  input(v-model="maxNgramSize", type="number")
-  input(v-model="numberOfKeywords", type="number")
-  input(v-model="text", type="text")
-  button(@click="sendRequest", style="width: 100px; height: 21px")
+    input(v-model="docInfo.language", type="text")
+    input(v-model="docInfo.maxNgramSize", type="number")
+    input(v-model="docInfo.numberOfKeywords", type="number")
+    input(v-model="docInfo.text", type="text")
+    button(@click="sendRequest", style="width: 100px; height: 21px")
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Prop, Vue } from 'vue-property-decorator'
+// noinspection SpellCheckingInspection
 import axios from 'axios'
 
-  @Component
+@Component
 export default class MainComponent extends Vue {
     @Prop()
     private msg!: string;
 
-    private language = ''
-    private maxNgramSize = 0
-    private numberOfKeywords = 0
-    private text = '';
+    private docInfo = {
+      language: '',
+      maxNgramSize: 0,
+      numberOfKeywords: 0,
+      text: ''
+    }
 
     private sendRequest (): void {
       axios.post('http://10.10.1.30:5000/yake/', {
-        language: this.language,
+        language: this.docInfo.language,
         // eslint-disable-next-line @typescript-eslint/camelcase
-        max_ngram_size: this.maxNgramSize,
+        max_ngram_size: this.docInfo.maxNgramSize,
         // eslint-disable-next-line @typescript-eslint/camelcase
-        number_of_keywords: this.numberOfKeywords,
-        text: this.text
+        number_of_keywords: this.docInfo.numberOfKeywords,
+        text: this.docInfo.text
       }, {
         headers: {
           'content-type': 'text/json'
