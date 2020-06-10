@@ -5,6 +5,7 @@
     input(v-model="docInfo.numberOfKeywords", type="number")
     input(v-model="docInfo.text", type="text")
     button(@click="sendRequest", style="width: 100px; height: 21px")
+    span(v-text="response")
   </div>
 </template>
 
@@ -15,8 +16,8 @@ import axios from 'axios'
 
 @Component
 export default class MainComponent extends Vue {
-    @Prop()
-    private msg!: string;
+    @Prop({ type: String, required: true })
+    private response!: string;
 
     private docInfo = {
       language: '',
@@ -37,7 +38,9 @@ export default class MainComponent extends Vue {
         headers: {
           'content-type': 'text/json'
         }
-      })
+      }).then(response => (
+        this.response = response.data
+      ))
     }
 }
 </script>
