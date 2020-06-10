@@ -13,7 +13,7 @@
 <body>
 
 <div id="app"></div>
-<script src="${pageContext.request.contextPath}/js/app.53cb078f.js"></script>
-<script src="${pageContext.request.contextPath}/js/chunk-vendors.4e6d7412.js"></script>
+<script src="${pageContext.request.contextPath}/js/index.e89f3b76.js"></script>
+<script src="${pageContext.request.contextPath}/js/chunk-vendors.28797817.js"></script>
 </body>
 </html>
