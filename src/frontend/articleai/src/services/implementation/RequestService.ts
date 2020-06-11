@@ -15,7 +15,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   }
 
   async sendRequestToYake (language: string, maxNgramSize: number, numberOfKeywords: number, text: string): Promise<YakeResponse[]> {
-    const response = await axios.post<YakeResponse[]>('https://run.mocky.io/v3/fb92e9b5-1d33-4590-8275-5c0e72b71e14', {
+    const response = await axios.post<YakeResponse[]>('http://10.10.1.30/yake/', {
       language: language,
       max_ngram_size: maxNgramSize,
       number_of_keywords: numberOfKeywords,
