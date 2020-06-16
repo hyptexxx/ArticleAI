@@ -1,4 +1,4 @@
-package com.example.ArticleAI.controllers.service.interfaces.ArticleFile;
+package com.example.ArticleAI.service.interfaces.ArticleFile;
 
 import org.springframework.web.multipart.MultipartFile;
 

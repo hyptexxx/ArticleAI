@@ -1,41 +1,39 @@
 <template lang="pug">
   div(style="display: flex; flex-direction: column;")
-    input(v-model="docInfo.language", type="text")
-    input(v-model="docInfo.maxNgramSize", type="number")
-    input(v-model="docInfo.numberOfKeywords", type="number")
-    input(v-model="docInfo.text", type="text")
-    button(@click="sendRequest", style="width: 100px; height: 21px;")
+    input(v-model="articleFile.meta.language", type="text")
+    input(v-model="articleFile.meta.maxNgramSize", type="number")
+    input(v-model="articleFile.meta.numberOfKeywords", type="number")
+    input(v-model="articleFile.meta.text", type="text")
+    button(@click="sendRequest", class="send-request-button")
     file
-    span(v-text="response")
-    span(v-for="response in YakeResponse" :key="response.score" v-text="response")
+    span(v-for="response in AnalyseResponse" :key="response.score" v-text="response")
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Prop } from 'vue-property-decorator'
+import { Component, Mixins } from 'vue-property-decorator'
 import RequestService from '@/services/implementation/RequestService'
-import YakeResponse from '@/models/YakeResponse'
+import AnalyseResponse from '@/models/AnalyseResponse'
+import ArticleFile from '@/models/ArticleFile/ArticleFile'
+import { ArticleMutationModule } from '@/store/ArticleMutationModule'
 
 @Component
-export default class MainComponent extends Mixins(RequestService) {
-  @Prop({ type: String, required: true })
-  private response!: string;
-
-  private docInfo = {
-    language: '',
-    maxNgramSize: 0,
-    numberOfKeywords: 0,
-    text: ''
+export default class MainComponent extends Mixins(RequestService, ArticleMutationModule) {
+  private articleFile: ArticleFile = {
+    file: null,
+    meta: {
+      language: '',
+      maxNgramSize: 0,
+      numberOfKeywords: 0,
+      text: ''
+    }
   }
 
-  private YakeResponse: YakeResponse[] = []
-
+  private AnalyseResponse: AnalyseResponse[] = []
   private async sendRequest (): Promise<void> {
-    this.YakeResponse = await this.sendRequestToYake(
-      this.docInfo.language,
-      this.docInfo.maxNgramSize,
-      this.docInfo.numberOfKeywords,
-      this.docInfo.text
-    )
+    if (this.articleFile) {
+      this.articleFile.file = this.ArticleFile
+      this.AnalyseResponse = await this.sendAndAnalyse(this.articleFile)
+    }
   }
 }
 </script>

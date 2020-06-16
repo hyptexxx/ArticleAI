@@ -1,31 +1,21 @@
 import { Vue, Component } from 'vue-property-decorator'
 import RequestServiceInterface from '@/services/interface/RequestServiceInterface'
 import axios from 'axios'
-import YakeResponse from '@/models/YakeResponse'
+import AnalyseResponse from '@/models/AnalyseResponse'
+import ArticleFile from '@/models/ArticleFile/ArticleFile'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
-  sendRequestAndSaveFile (file: File): void {
-    console.log(file)
+  async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse[]> {
     const formData: FormData = new FormData()
-    formData.append('file', file)
-    axios.post('http://localhost:8080/api/files/analyze', formData).then(response => (
-      console.log(response)
-    ))
-  }
-
-  async sendRequestToYake (language: string, maxNgramSize: number, numberOfKeywords: number, text: string): Promise<YakeResponse[]> {
-    const response = await axios.post<YakeResponse[]>('http://10.10.1.30/yake/', {
-      language: language,
-      max_ngram_size: maxNgramSize,
-      number_of_keywords: numberOfKeywords,
-      text: text
-    }, {
-      headers: {
-        'content-type': 'text/json',
-        'Access-Control-Allow-Origin': '*'
-      }
-    })
+    if (articleFile.file) {
+      formData.append('file', articleFile.file)
+    }
+    formData.append('language', articleFile.meta.language)
+    formData.append('max_ngram_size', articleFile.meta.maxNgramSize.toString())
+    formData.append('number_of_keywords', articleFile.meta.numberOfKeywords.toString())
+    formData.append('text', articleFile.meta.text)
+    const response = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/files/analyze', formData)
     return response.data
   }
 }

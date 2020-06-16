@@ -1,7 +1,6 @@
-import YakeResponse from '@/models/YakeResponse'
+import AnalyseResponse from '@/models/AnalyseResponse.js'
+import ArticleFile from '@/models/ArticleFile/ArticleFile'
 
 export default interface RequestServiceInterface{
-  sendRequestAndSaveFile(file: File): void;
-
-  sendRequestToYake(language: string, maxNgramSize: number, numberOfKeywords: number, text: string): Promise<YakeResponse[]>;
+  sendAndAnalyse(articleFile: ArticleFile): Promise<AnalyseResponse[]>;
 }

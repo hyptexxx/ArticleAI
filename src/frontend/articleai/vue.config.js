@@ -1,18 +1,37 @@
+const HtmlWebpackPlugin = require('html-webpack-plugin')
 module.exports = {
-  pages: {
-    index: {
-      entry: './src/main.ts',
-      template: 'public/index.html',
-      filename: 'index.html',
-      title: 'Index Page',
-      chunks: ['chunk-vendors', 'chunk-common', 'index']
-    },
-    test: {
-      entry: './src/main.ts',
-      template: 'public/test.html',
-      filename: 'test.html',
-      title: 'test Page',
-      chunks: ['chunk-vendors', 'chunk-common', 'index']
+  css: {
+    extract: {
+      filename: 'css/Main.css'
     }
+  },
+  configureWebpack: {
+    module: {
+      rules: [
+        {
+          test: /\.twig$/,
+          use: {
+            loader: 'twig-loader',
+            options: {}
+          }
+        }
+      ]
+    },
+    node: {
+      fs: 'empty'
+    },
+    optimization: {
+      splitChunks: false
+    },
+    output: {
+      filename: 'js/main.js'
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: 'src/html/main.twig',
+        filename: 'main.html',
+        title: 'stats'
+      })
+    ]
   }
 }
