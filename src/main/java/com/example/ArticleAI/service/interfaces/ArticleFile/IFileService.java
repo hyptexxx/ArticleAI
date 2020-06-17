@@ -2,9 +2,17 @@ package com.example.ArticleAI.service.interfaces.ArticleFile;
 
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
+import java.io.File;
 
 public interface IFileService {
-    boolean saveFileToFilesystem(MultipartFile file) throws IOException;
+    /**
+     * @param file loaded file
+     * @return true | false, if file was successfully saved/
+     */
+    boolean saveFileToFilesystem(MultipartFile file);
+
+    /**
+     * @return previously saved file
+     */
+    File getFile();
 }

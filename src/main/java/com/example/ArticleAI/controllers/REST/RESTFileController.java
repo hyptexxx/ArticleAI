@@ -40,14 +40,14 @@ public class RESTFileController {
     @PostMapping(value = "/api/files/analyze")
     public ResponseEntity<Object> saveFile(@RequestParam("file") MultipartFile file, ArticleYake articleYake) throws IOException {
         if (fileService.saveFileToFilesystem(file)) {
-            logger.info("file saved");
-            if (requestService.sendRequest(articleYake).isEmpty()) {
-                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(articleYake));
+            logger.info("File saved:\t" + fileService.getFile().getAbsolutePath());
+            if (requestService.sendRequest(poiService.getArticleYakeText(fileService.getFile(), articleYake)).isEmpty()) {
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
             } else {
                 return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
             }
         } else {
-            logger.info("failed to save file");
+            logger.info("Failed to save file");
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
         }
     }

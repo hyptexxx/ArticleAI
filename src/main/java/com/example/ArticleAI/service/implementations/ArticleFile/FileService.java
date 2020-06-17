@@ -18,16 +18,23 @@ public class FileService implements IFileService {
             "resources" + File.separator +
             "uploadedFiles";
 
+    private static File importedFile;
+
+
+    /**
+     * @param file loaded file
+     * @return true | false, if file was successfully saved.
+     */
     @Override
     public boolean saveFileToFilesystem(MultipartFile file) {
         final File dir = new File(rootPath);
-        BufferedOutputStream stream = null;
+        BufferedOutputStream stream;
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+        importedFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
         try {
-            stream = new BufferedOutputStream(new FileOutputStream(serverFile));
+            stream = new BufferedOutputStream(new FileOutputStream(importedFile));
         } catch (FileNotFoundException e) {
             e.printStackTrace();
             return false;
@@ -44,6 +51,15 @@ public class FileService implements IFileService {
             e.printStackTrace();
             return false;
         }
-        return serverFile.exists();
+        return importedFile.exists();
+    }
+
+
+    /**
+     * @return previously saved file
+     */
+    @Override
+    public File getFile() {
+        return importedFile;
     }
 }
