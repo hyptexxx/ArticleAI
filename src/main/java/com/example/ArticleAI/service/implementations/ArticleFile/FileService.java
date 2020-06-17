@@ -12,22 +12,20 @@ public class FileService implements IFileService {
     /**
      * Path to resources/uploadFiles.
      */
-    private final String rootPath = System.getProperty("catalina.home") + File.separator + "webapps" + File.separator + "ROOT" + File.separator + "resources" + File.separator + "uploadedFiles";
-
+    private final String rootPath = System.getProperty("catalina.home") + File.separator +
+            "webapps" + File.separator +
+            "ROOT" + File.separator +
+            "resources" + File.separator +
+            "uploadedFiles";
 
     @Override
     public boolean saveFileToFilesystem(MultipartFile file) {
-        String rootPath = System.getProperty("catalina.home") + File.separator + "webapps" + File.separator + "ROOT" + File.separator + "resources" + File.separator + "uploadedFiles";
-        File dir = new File(rootPath);
+        final File dir = new File(rootPath);
+        BufferedOutputStream stream = null;
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        File relativePath = new File(dir.getAbsolutePath());
-        if (!relativePath.exists()) {
-            relativePath.mkdir();
-        }
-        File serverFile = new File(relativePath.getAbsolutePath() + File.separator + file.getOriginalFilename());
-        BufferedOutputStream stream = null;
+        File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
         try {
             stream = new BufferedOutputStream(new FileOutputStream(serverFile));
         } catch (FileNotFoundException e) {
