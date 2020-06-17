@@ -17,8 +17,16 @@ public class FileService implements IFileService {
 
     @Override
     public boolean saveFileToFilesystem(MultipartFile file) {
-        File dir = new File(rootPath + File.separator + "tmpFiles");
-        File serverFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+        String rootPath = System.getProperty("catalina.home") + File.separator + "webapps" + File.separator + "ROOT" + File.separator + "resources" + File.separator + "uploadedFiles";
+        File dir = new File(rootPath);
+        if (!dir.exists()) {
+            dir.mkdirs();
+        }
+        File relativePath = new File(dir.getAbsolutePath());
+        if (!relativePath.exists()) {
+            relativePath.mkdir();
+        }
+        File serverFile = new File(relativePath.getAbsolutePath() + File.separator + file.getOriginalFilename());
         BufferedOutputStream stream = null;
         try {
             stream = new BufferedOutputStream(new FileOutputStream(serverFile));
@@ -38,9 +46,6 @@ public class FileService implements IFileService {
             e.printStackTrace();
             return false;
         }
-        //todo edit
-        return true;
+        return serverFile.exists();
     }
-
-
 }

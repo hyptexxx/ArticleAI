@@ -13,6 +13,9 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     }
     formData.append('language', articleFile.meta.language)
     formData.append('max_ngram_size', articleFile.meta.maxNgramSize.toString())
+    formData.append('deduplication_thresold', articleFile.meta.deduplicationThresold.toString())
+    formData.append('deduplication_algo', articleFile.meta.deduplicationAlgo.toString())
+    formData.append('windowSize', articleFile.meta.windowSize.toString())
     formData.append('number_of_keywords', articleFile.meta.numberOfKeywords.toString())
     formData.append('text', articleFile.meta.text)
     const response = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/files/analyze', formData)

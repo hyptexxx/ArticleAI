@@ -14,11 +14,23 @@ public class ArticleYake {
 
     @Getter
     @Setter
-    private int max_ngram_size;
+    private float max_ngram_size;
 
     @Getter
     @Setter
-    private int number_of_keywords;
+    private float deduplication_thresold;
+
+    @Getter
+    @Setter
+    private String deduplication_algo;
+
+    @Getter
+    @Setter
+    private float windowSize;
+
+    @Getter
+    @Setter
+    private float number_of_keywords;
 
     @Getter
     @Setter

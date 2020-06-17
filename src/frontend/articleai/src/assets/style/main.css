@@ -1,7 +1,14 @@
-body{
-  background-color: #5c5c5c;
-}
 .send-request-button{
   width: 100px;
   height: 21px;
+}
+.main-component{
+  display: flex;
+  width: 800px;
+  margin: auto;
+  flex-direction: column;
+  justify-content: space-evenly;
+}
+input{
+  height: 50px;
 }
