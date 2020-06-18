@@ -8,7 +8,7 @@ import java.text.ParseException;
 @Service
 public class POIArticleProcessService implements IPOIArticleProcessService {
 
-    private static String parsedArticleText;
+    private String parsedArticleText;
 
     /**
      * @return article name
@@ -51,7 +51,7 @@ public class POIArticleProcessService implements IPOIArticleProcessService {
      */
     @Override
     public void setArticleText(String articleText) {
-        parsedArticleText = articleText;
+        parsedArticleText = articleText.toLowerCase();
     }
 
     /**
@@ -69,6 +69,6 @@ public class POIArticleProcessService implements IPOIArticleProcessService {
         } catch (ParseException e) {
             throw new ParseException("Can't parse article text", 1);
         }
-        return parsedArticleText;
+        return this.parsedArticleText;
     }
 }

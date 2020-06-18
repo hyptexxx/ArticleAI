@@ -26,7 +26,7 @@ import AnalyseResponse from '@/models/AnalyseResponse'
 import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import { ArticleMutationModule } from '@/store/ArticleMutationModule'
 
-  @Component
+@Component
 export default class MainComponent extends Mixins(RequestService, ArticleMutationModule) {
     private articleFile: ArticleFile = {
       file: null,
