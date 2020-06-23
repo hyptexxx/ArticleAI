@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.nio.file.FileAlreadyExistsException;
 
 @Service
 public class FileService implements IFileService {
@@ -26,30 +27,34 @@ public class FileService implements IFileService {
      * @return true | false, if file was successfully saved.
      */
     @Override
-    public boolean saveFileToFilesystem(MultipartFile file) {
+    public boolean saveFileToFilesystem(MultipartFile file) throws FileAlreadyExistsException {
         final File dir = new File(rootPath);
         BufferedOutputStream stream;
         if (!dir.exists()) {
             dir.mkdirs();
         }
         importedFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
-        try {
-            stream = new BufferedOutputStream(new FileOutputStream(importedFile));
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
-            return false;
-        }
-        try {
-            stream.write(file.getBytes());
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
-        }
-        try {
-            stream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            return false;
+        if (!isFileExists()) {
+            try {
+                stream = new BufferedOutputStream(new FileOutputStream(importedFile));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+                return false;
+            }
+            try {
+                stream.write(file.getBytes());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+        } else {
+            throw new FileAlreadyExistsException("File already exists");
         }
         return importedFile.exists();
     }
@@ -61,5 +66,9 @@ public class FileService implements IFileService {
     @Override
     public File getFile() {
         return importedFile;
+    }
+
+    private static boolean isFileExists() {
+        return importedFile.exists();
     }
 }

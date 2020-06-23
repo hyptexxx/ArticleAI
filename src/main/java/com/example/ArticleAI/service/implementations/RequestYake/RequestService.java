@@ -7,6 +7,7 @@ import okhttp3.*;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 import java.util.concurrent.TimeUnit;
 
 @Service

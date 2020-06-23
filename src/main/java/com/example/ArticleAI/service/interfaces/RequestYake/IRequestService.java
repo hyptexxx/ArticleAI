@@ -1,8 +1,10 @@
 package com.example.ArticleAI.service.interfaces.RequestYake;
 
 import com.example.ArticleAI.models.ArticleYake;
+import org.apache.commons.io.FileExistsException;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 
 public interface IRequestService {
     /**

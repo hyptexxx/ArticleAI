@@ -8,7 +8,7 @@ export default new Vuex.Store({
     file: File
   },
   mutations: {
-    setArticleFile(state: any, file: File): void {
+    setArticleFile (state: any, file: File): void {
       state.file = file
     }
   },

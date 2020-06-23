@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.nio.file.FileAlreadyExistsException;
 
 @RestController
 public class RESTFileController {
@@ -39,16 +40,34 @@ public class RESTFileController {
 
     @PostMapping(value = "/api/files/analyze")
     public ResponseEntity<Object> saveFile(@RequestParam("file") MultipartFile file, ArticleYake articleYake) throws IOException {
-        if (fileService.saveFileToFilesystem(file)) {
-            logger.info("File saved:\t" + fileService.getFile().getAbsolutePath());
+        try{
+            if (fileService.saveFileToFilesystem(file)) {
+                logger.info("File saved:\t" + fileService.getFile().getAbsolutePath());
+                if (requestService.sendRequest(poiService.getArticleYakeText(fileService.getFile(), articleYake)).isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
+                } else {
+                    return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
+                }
+            } else {
+                logger.info("Failed to save file");
+                return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+            }
+        } catch (FileAlreadyExistsException e){
+            logger.info(e.getMessage() + "\t" + fileService.getFile().getAbsolutePath());
             if (requestService.sendRequest(poiService.getArticleYakeText(fileService.getFile(), articleYake)).isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
             } else {
                 return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
             }
+        }
+    }
+
+    @PostMapping(value = "/api/yake/analyze")
+    public ResponseEntity<Object> analyseArticleText(ArticleYake articleYake) throws IOException {
+        if (requestService.sendRequest(articleYake).isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
         } else {
-            logger.info("Failed to save file");
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+            return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
         }
     }
 }

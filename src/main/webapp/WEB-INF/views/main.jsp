@@ -5,15 +5,13 @@
     <title>Main</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
     <meta charset="UTF-8">
-<%--    <link rel="stylesheet" href="${pageContext.request.contextPath}/resources/build/css/main.css">--%>
+    <link rel="stylesheet" href="${pageContext.request.contextPath}/css/Main.css">
     <link rel="SHORTCUT ICON" href="https://ies.unitech-mo.ru/files/upload/pages/_thumb/image/favicon.ico" type="image/x-icon">
     <meta name="_csrf" content="${_csrf.token}"/>
     <meta name="_csrf_header" content="${_csrf.headerName}"/>
     <meta charset="UTF-8">
 <body>
-
-<div id="app"></div>
-<script src="${pageContext.request.contextPath}/js/index.e89f3b76.js"></script>
-<script src="${pageContext.request.contextPath}/js/chunk-vendors.28797817.js"></script>
+<div id="main-component"></div>
+<script src="${pageContext.request.contextPath}/js/main.js"></script>
 </body>
 </html>
