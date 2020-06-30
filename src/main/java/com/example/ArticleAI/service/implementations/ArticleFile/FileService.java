@@ -55,6 +55,7 @@ public class FileService implements IFileService {
             }
         } else {
             throw new FileAlreadyExistsException("File already exists");
+            //todo сохранять стейт статьи при нужных результатов
         }
         return importedFile.exists();
     }
