@@ -12,14 +12,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    formData.append('language', articleFile.meta.language)
-    formData.append('max_ngram_size', articleFile.meta.maxNgramSize.toString())
-    formData.append('deduplication_thresold', articleFile.meta.deduplicationThresold.toString())
-    formData.append('deduplication_algo', articleFile.meta.deduplicationAlgo.toString())
-    formData.append('windowSize', articleFile.meta.windowSize.toString())
-    formData.append('number_of_keywords', articleFile.meta.numberOfKeywords.toString())
-    formData.append('text', articleFile.meta.text)
-    const response = await axios.post<AnalyseResponse[]>('api/files/analyze', formData)
+    const response = await axios.post<AnalyseResponse[]>(
+      'http://localhost:8080/api/files/analyze',
+      this.createFormDataForArticleFile(articleFile, formData)
+    )
     return response.data
   }
 
@@ -32,7 +28,25 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('windowSize', articleFileMeta.windowSize.toString())
     formData.append('number_of_keywords', articleFileMeta.numberOfKeywords.toString())
     formData.append('text', articleFileMeta.text)
-    const response = await axios.post<AnalyseResponse[]>('api/yake/analyze', formData)
+    const response = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/analyze', formData)
     return response.data
+  }
+
+  saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): void {
+    const formData: FormData = new FormData()
+    this.createFormDataForArticleFile(articleFile, formData)
+    formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
+  }
+
+  private createFormDataForArticleFile (articleFile: ArticleFile, formData: FormData): FormData {
+    formData.append('language', articleFile.meta.language)
+    formData.append('max_ngram_size', articleFile.meta.maxNgramSize.toString())
+    formData.append('deduplication_thresold', articleFile.meta.deduplicationThresold.toString())
+    formData.append('deduplication_algo', articleFile.meta.deduplicationAlgo.toString())
+    formData.append('windowSize', articleFile.meta.windowSize.toString())
+    formData.append('number_of_keywords', articleFile.meta.numberOfKeywords.toString())
+    formData.append('text', articleFile.meta.text)
+    return formData
   }
 }

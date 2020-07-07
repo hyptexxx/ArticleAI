@@ -34,8 +34,10 @@ public class POIService implements IPOIService {
             final FileInputStream fis = new FileInputStream(article.getAbsolutePath());
             final List<XWPFParagraph> paragraphs = new XWPFDocument(fis).getParagraphs();
             for (XWPFParagraph paragraph : paragraphs) {
-                articleText.append("\n");
-                articleText.append(paragraph.getText());
+                if(!(paragraph.getText().equals(" ") || paragraph.getText().equals("\n") || paragraph.getText().equals("\t"))){
+                    articleText.append(". ");
+                    articleText.append(paragraph.getText());
+                }
             }
             fis.close();
         } catch (Exception e) {

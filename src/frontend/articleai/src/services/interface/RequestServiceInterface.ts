@@ -5,4 +5,5 @@ import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 export default interface RequestServiceInterface{
   sendAndAnalyse(articleFile: ArticleFile): Promise<AnalyseResponse[]>;
   sendTextAndAnalyse(articleFile: ArticleFileMeta): Promise<AnalyseResponse[]>;
+  saveResultRequest(analyseResponse: AnalyseResponse[], articleFile: ArticleFile): void;
 }

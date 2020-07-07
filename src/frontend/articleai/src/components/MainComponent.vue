@@ -23,9 +23,12 @@
       label(for="text") text
       input(v-model="articleFile.meta.text", type="text" id="text")
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить
-      div(class="yake-response-container")
-        span(v-for="response in AnalyseResponse")
-          | {{response}}
+      button(@click="addNewField", class="send-request-button") Добавить
+      button(@click="saveResult", class="send-request-button") Сохранить результат
+      div(v-for="response in AnalyseResponse")
+        input(v-model="response.ngram")
+        input(v-model="response.score", type="number")
+        button(@click="deleteResult(response)") Удалить
 </template>
 
 <script lang="ts">
@@ -51,6 +54,28 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
       windowSize: 0,
       numberOfKeywords: 0,
       text: ''
+    }
+  }
+
+  private deleteResult (elemToDelete: AnalyseResponse): void {
+    this.AnalyseResponse.splice(this.AnalyseResponse.indexOf(elemToDelete), 1)
+  }
+
+  private addNewField (): void {
+    this.AnalyseResponse.push({
+      ngram: '',
+      score: 0
+    })
+  }
+
+  private saveResult (): void {
+    if (this.AnalyseResponse && this.articleFile) {
+      if (this.getValidationErrorsFromArticle(this.articleFile).length > 0) {
+        this.validationErrorsFromArticle = this.getValidationErrorsFromArticle(this.articleFile)
+      } else {
+        this.validationErrorsFromArticle = ['']
+        this.saveResultRequest(this.AnalyseResponse, this.articleFile)
+      }
     }
   }
 

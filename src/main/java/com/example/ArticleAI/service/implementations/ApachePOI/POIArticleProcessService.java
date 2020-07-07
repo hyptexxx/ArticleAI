@@ -60,15 +60,38 @@ public class POIArticleProcessService implements IPOIArticleProcessService {
      */
     @Override
     public String getArticleParsedText() throws ParseException {
+        this.setLowerCase();
+//        this.removeEng();
         String parsedArticleText;
         try {
             parsedArticleText = this.getArticleName() + "\n\n" +
-                    this.getArticleKeyWords()  + "\n\n" +
-                    this.getArticleText()  + "\n\n" +
+                    this.getArticleKeyWords() + "\n\n" +
+                    this.getArticleText() + "\n\n" +
                     this.getArticleReferences();
         } catch (ParseException e) {
             throw new ParseException("Can't parse article text", 1);
         }
         return this.parsedArticleText;
+    }
+
+    @Override
+    public String removeEng() throws ParseException {
+        String[] result = this.parsedArticleText.split("\\.*?[.?!]");
+        String alphabet = "abcdefghijklmnopqrstuvwxyz";
+        for (String p : result) {
+            if (p.equals("") || p.equals(" ") || p.equals("\t") || p.equals("\n")) {
+                for (int pos = 0; pos < p.length(); pos++) {
+                    if(alphabet.matches(String.valueOf(p.charAt(pos)))){
+
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+    @Override
+    public void setLowerCase() {
+        this.parsedArticleText = this.parsedArticleText.toLowerCase();
     }
 }
