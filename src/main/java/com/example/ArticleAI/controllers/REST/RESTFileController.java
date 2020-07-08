@@ -86,8 +86,10 @@ public class RESTFileController {
                                                    ArticleYake articleYake,
                                                    @RequestParam("analyseResponse") String response) throws IOException {
         if(yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake), yakeService.parseYakeResponseJSON(response))){
+            logger.info("Yake params saved");
             return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
         } else {
+            logger.info("Failed to save Yake params");
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
         }
     }
