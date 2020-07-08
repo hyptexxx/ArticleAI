@@ -3,6 +3,14 @@ package com.example.ArticleAI.models;
 
 public class ArticleYake {
 
+    private String language;
+    private float max_ngram_size;
+    private float deduplication_thresold;
+    private String deduplication_algo;
+    private float windowSize;
+    private float number_of_keywords;
+    private String text;
+
     public ArticleYake(String language, float max_ngram_size, float deduplication_thresold, String deduplication_algo, float windowSize, float number_of_keywords, String text) {
         this.language = language;
         this.max_ngram_size = max_ngram_size;
@@ -60,21 +68,6 @@ public class ArticleYake {
     public void setNumber_of_keywords(float number_of_keywords) {
         this.number_of_keywords = number_of_keywords;
     }
-
-    private String language;
-
-    private float max_ngram_size;
-
-    private float deduplication_thresold;
-
-    private String deduplication_algo;
-
-    private float windowSize;
-
-    private float number_of_keywords;
-
-    private String text;
-
 
     public String getText() {
         return text;

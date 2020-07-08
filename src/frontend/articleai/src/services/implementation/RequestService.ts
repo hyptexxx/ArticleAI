@@ -34,8 +34,11 @@ export default class RequestService extends Vue implements RequestServiceInterfa
 
   saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): void {
     const formData: FormData = new FormData()
-    this.createFormDataForArticleFile(articleFile, formData)
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    this.createFormDataForArticleFile(articleFile, formData)
+    if (articleFile.file) {
+      formData.append('file', articleFile.file)
+    }
     axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
   }
 

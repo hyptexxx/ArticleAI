@@ -2,9 +2,11 @@ package com.example.ArticleAI.controllers.REST;
 
 
 import com.example.ArticleAI.models.ArticleYake;
+import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
 import com.example.ArticleAI.service.interfaces.RequestYake.IRequestService;
+import com.example.ArticleAI.service.interfaces.YakeService.IYakeService;
 import org.slf4j.Logger;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,11 +33,19 @@ public class RESTFileController {
     private final
     IRequestService requestService;
 
-    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService) {
+    private final
+    IYakeService yakeService;
+
+    private final
+    YakeDBService yakeDBService;
+
+    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService, IYakeService yakeService, YakeDBService yakeDBService) {
         this.logger = logger;
         this.fileService = fileService;
         this.poiService = poiService;
         this.requestService = requestService;
+        this.yakeService = yakeService;
+        this.yakeDBService = yakeDBService;
     }
 
     @PostMapping(value = "/api/files/analyze")
@@ -68,6 +78,17 @@ public class RESTFileController {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
+        }
+    }
+
+    @PostMapping(value = "/api/yake/saveResultEntity")
+    public ResponseEntity<Object> saveResultEntity(@RequestParam("file") MultipartFile file,
+                                                   ArticleYake articleYake,
+                                                   @RequestParam("analyseResponse") String response) throws IOException {
+        if(yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake), yakeService.parseYakeResponseJSON(response))){
+            return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
+        } else {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
         }
     }
 }
