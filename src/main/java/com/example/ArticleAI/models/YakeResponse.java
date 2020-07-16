@@ -9,6 +9,10 @@ public class YakeResponse {
         this.score = score;
     }
 
+    public YakeResponse() {
+
+    }
+
 
     public String getNgram() {
         return ngram;

@@ -8,4 +8,8 @@ import java.util.List;
 
 public interface IYakeDBDAO {
     boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList);
+
+    List<YakeResponse> getSavedYakeResponse(Integer yakeId);
+
+    ArticleYake getSavedAnalysedArticle(Integer yakeId);
 }

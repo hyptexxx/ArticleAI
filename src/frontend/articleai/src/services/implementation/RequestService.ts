@@ -4,6 +4,7 @@ import axios from 'axios'
 import AnalyseResponse from '@/models/AnalyseResponse'
 import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
+import FullArticle from '@/models/FullArticle'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
@@ -51,5 +52,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('number_of_keywords', articleFile.meta.numberOfKeywords.toString())
     formData.append('text', articleFile.meta.text)
     return formData
+  }
+
+  async loadSavedResults(yakeId: number): Promise<FullArticle> {
+    const response = await axios.post<FullArticle>('http://localhost:8080/api/yake/response', yakeId)
+    return response.data
   }
 }

@@ -25,6 +25,7 @@
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить
       button(@click="addNewField", class="send-request-button") Добавить
       button(@click="saveResult", class="send-request-button") Сохранить результат
+      button(@click="loadResult", class="send-request-button") Загрузить сохранённые результаты
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
         input(v-model="response.score", type="number")
@@ -38,6 +39,8 @@ import AnalyseResponse from '@/models/AnalyseResponse'
 import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import { ArticleMutationModule } from '@/store/ArticleMutationModule'
 import ValidationYakeService from '@/services/implementation/ValidationYakeService'
+import FullArticle from '@/models/FullArticle'
+import ArticleFileMeta from "@/models/ArticleFile/ArticleFileMeta";
 
 @Component
 export default class MainComponent extends Mixins(RequestService, ArticleMutationModule, ValidationYakeService) {
@@ -59,6 +62,19 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
 
   private deleteResult (elemToDelete: AnalyseResponse): void {
     this.AnalyseResponse.splice(this.AnalyseResponse.indexOf(elemToDelete), 1)
+  }
+
+  private loadResult (): void {
+    const results = this.loadSavedResults(1) as unknown as FullArticle
+    this.AnalyseResponse = results.analyseResponse
+    if (results.analyseResponse.length > 0) {
+      this.articleFile = {
+        file: null,
+        meta: results.articleYake as ArticleFileMeta
+      }
+    } else {
+      this.validationErrorsFromArticle.push('Нет сохранённых результатов')
+    }
   }
 
   private addNewField (): void {

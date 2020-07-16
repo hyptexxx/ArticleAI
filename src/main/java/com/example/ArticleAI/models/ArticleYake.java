@@ -3,13 +3,14 @@ package com.example.ArticleAI.models;
 
 public class ArticleYake {
 
-    private String language;
     private float max_ngram_size;
     private float deduplication_thresold;
-    private String deduplication_algo;
     private float windowSize;
     private float number_of_keywords;
+    private String deduplication_algo;
+    private String language;
     private String text;
+
 
     public ArticleYake(String language, float max_ngram_size, float deduplication_thresold, String deduplication_algo, float windowSize, float number_of_keywords, String text) {
         this.language = language;
@@ -20,6 +21,11 @@ public class ArticleYake {
         this.number_of_keywords = number_of_keywords;
         this.text = text;
     }
+
+    public ArticleYake() {
+
+    }
+
 
     public String getLanguage() {
         return language;

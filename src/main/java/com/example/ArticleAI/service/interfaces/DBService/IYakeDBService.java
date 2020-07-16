@@ -9,4 +9,8 @@ import java.util.List;
 
 public interface IYakeDBService {
     boolean saveAnalysedArticleToDB(MultipartFile file, ArticleYake articleYake, List<YakeResponse> yakeResponseList);
+
+    List<YakeResponse> getSavedYakeResponse(Integer yakeId);
+
+    ArticleYake getSavedAnalysedArticle(Integer yakeId);
 }

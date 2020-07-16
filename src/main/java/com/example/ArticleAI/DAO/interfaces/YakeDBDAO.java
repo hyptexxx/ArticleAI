@@ -1,6 +1,8 @@
 package com.example.ArticleAI.DAO.interfaces;
 
 import com.example.ArticleAI.DAO.service.IYakeDBDAO;
+import com.example.ArticleAI.mappers.ArticleYakeMapper;
+import com.example.ArticleAI.mappers.YakeResponseMapper;
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.YakeResponse;
 import org.springframework.dao.DataAccessException;
@@ -24,7 +26,7 @@ public class YakeDBDAO implements IYakeDBDAO {
         try {
             jdbcTemplate.update(
             "INSERT INTO" +
-                    " article_yake " +
+                    " article " +
                     "(language, max_ngram_size, deduplication_thresold, deduplication_algo, windowSize, number_of_keywords, text) " +
                     "VALUES " +
                     "(?,?,?,?,?,?,?)",
@@ -40,5 +42,15 @@ public class YakeDBDAO implements IYakeDBDAO {
             return false;
         }
         return true;
+    }
+
+    @Override
+    public List<YakeResponse> getSavedYakeResponse(Integer yakeId) {
+        return jdbcTemplate.query("select * from article_scores_yake where article_id = ?", new YakeResponseMapper(), yakeId);
+    }
+
+    @Override
+    public ArticleYake getSavedAnalysedArticle(Integer yakeId) {
+        return jdbcTemplate.queryForObject("select * from article_params where article_id = ?", new ArticleYakeMapper(), yakeId);
     }
 }
