@@ -40,7 +40,7 @@ import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import { ArticleMutationModule } from '@/store/ArticleMutationModule'
 import ValidationYakeService from '@/services/implementation/ValidationYakeService'
 import FullArticle from '@/models/FullArticle'
-import ArticleFileMeta from "@/models/ArticleFile/ArticleFileMeta";
+import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 
 @Component
 export default class MainComponent extends Mixins(RequestService, ArticleMutationModule, ValidationYakeService) {

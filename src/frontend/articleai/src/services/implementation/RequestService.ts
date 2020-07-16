@@ -54,8 +54,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return formData
   }
 
-  async loadSavedResults(yakeId: number): Promise<FullArticle> {
-    const response = await axios.post<FullArticle>('http://localhost:8080/api/yake/response', yakeId)
+  async loadSavedResults (yakeId: number): Promise<FullArticle> {
+    const formData: FormData = new FormData()
+    formData.append('yakeId', yakeId.toString())
+    const response = await axios.post<FullArticle>('http://localhost:8080/api/yake/response', formData)
     return response.data
   }
 }
