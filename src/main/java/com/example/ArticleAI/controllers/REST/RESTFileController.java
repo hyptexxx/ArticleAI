@@ -2,6 +2,8 @@ package com.example.ArticleAI.controllers.REST;
 
 
 import com.example.ArticleAI.models.ArticleYake;
+import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
+import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
@@ -17,6 +19,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 public class RESTFileController {
@@ -39,13 +43,17 @@ public class RESTFileController {
     private final
     YakeDBService yakeDBService;
 
-    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService, IYakeService yakeService, YakeDBService yakeDBService) {
+    private final ClassesResolver classesResolver;
+
+
+    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService, IYakeService yakeService, YakeDBService yakeDBService, ClassesResolver classesResolver) {
         this.logger = logger;
         this.fileService = fileService;
         this.poiService = poiService;
         this.requestService = requestService;
         this.yakeService = yakeService;
         this.yakeDBService = yakeDBService;
+        this.classesResolver = classesResolver;
     }
 
     @PostMapping(value = "/api/files/analyze")
