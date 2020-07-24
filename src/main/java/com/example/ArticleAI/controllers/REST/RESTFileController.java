@@ -3,7 +3,6 @@ package com.example.ArticleAI.controllers.REST;
 
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
-import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
