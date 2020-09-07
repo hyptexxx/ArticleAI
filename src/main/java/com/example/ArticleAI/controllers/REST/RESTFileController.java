@@ -101,7 +101,7 @@ public class RESTFileController {
         try {
              classes = classesResolver.resolve();
         } catch (EmptyKeywordListException e) {
-            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
         if (classes.isEmpty()) {
             return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
