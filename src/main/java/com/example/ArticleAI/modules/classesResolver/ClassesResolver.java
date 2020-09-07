@@ -4,6 +4,7 @@ import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordList
 import com.example.ArticleAI.modules.classesResolver.models.Class;
 import com.example.ArticleAI.modules.classesResolver.models.Keyword;
 import com.example.ArticleAI.modules.classesResolver.service.interfaces.IClassesResolverService;
+import org.apache.commons.collections4.ListUtils;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -32,7 +33,7 @@ public class ClassesResolver {
             for (String keyword : this.keyWords) {
                 if (classesResolverService.isKeywordExistsInExistingClassesList(keyword, existingKeywordsList)) {
                     existingClassList = classesResolverService.getExistingClassList(keyword);
-                    resultClassList = processClass(existingClassList);
+                    resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
                 } else {
                     classesResolverService.saveNewKeyword(keyword);
                 }

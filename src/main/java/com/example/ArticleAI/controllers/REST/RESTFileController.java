@@ -3,6 +3,8 @@ package com.example.ArticleAI.controllers.REST;
 
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
+import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
+import com.example.ArticleAI.modules.classesResolver.models.Class;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
@@ -86,6 +88,25 @@ public class RESTFileController {
         } else {
             return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
         }
+    }
+
+    @PostMapping(value = "/api/actuality/analyse")
+    public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response) throws IOException {
+        List<String> keyWords = new ArrayList<>();
+        List<Class> classes = new ArrayList<>();
+        yakeService.parseYakeResponseJSON(response).forEach(yakeResponse -> {
+            keyWords.add(yakeResponse.getNgram());
+        });
+        classesResolver.setKeyWords(keyWords);
+        try {
+             classes = classesResolver.resolve();
+        } catch (EmptyKeywordListException e) {
+            e.printStackTrace();
+        }
+        if (classes.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+        }
+        return ResponseEntity.status(HttpStatus.OK).body(classes);
     }
 
     @PostMapping(value = "/api/yake/saveResultEntity")
