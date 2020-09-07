@@ -7,8 +7,11 @@ import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.YakeResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.sql.PreparedStatement;
 import java.util.List;
 
 @Repository
@@ -23,22 +26,41 @@ public class YakeDBDAO implements IYakeDBDAO {
 
     @Override
     public boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList) {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection
+                        .prepareStatement(
+                                "INSERT INTO article(article_id) VALUES (?)",
+                                PreparedStatement.RETURN_GENERATED_KEYS
+                        );
+                ps.setInt(1, 0);
+                return ps;
+            }, keyHolder);
+
+            for (YakeResponse yakeResponse: yakeResponseList) {
+                jdbcTemplate.update("insert into article_scores_yake(article_id, ngram, score) values (?,?,?)",
+                        keyHolder.getKey(),
+                        yakeResponse.getNgram(),
+                        yakeResponse.getScore());
+            }
+
             jdbcTemplate.update(
-            "INSERT INTO" +
-                    " article " +
-                    "(language, max_ngram_size, deduplication_thresold, deduplication_algo, windowSize, number_of_keywords, text) " +
-                    "VALUES " +
-                    "(?,?,?,?,?,?,?)",
-                articleYake.getLanguage(),
-                articleYake.getMax_ngram_size(),
-                articleYake.getDeduplication_thresold(),
-                articleYake.getDeduplication_algo(),
-                articleYake.getWindowSize(),
-                articleYake.getNumber_of_keywords(),
-                articleYake.getText()
+                    "INSERT INTO" +
+                            " article_params " +
+                            "(article_id, language, max_ngram_size, deduplication_thresold, deduplication_algo, window_size, number_of_keywords, text) " +
+                            "VALUES " +
+                            "(?,?,?,?,?,?,?,?)",
+                    keyHolder.getKey(),
+                    articleYake.getLanguage(),
+                    articleYake.getMax_ngram_size(),
+                    articleYake.getDeduplication_thresold(),
+                    articleYake.getDeduplication_algo(),
+                    articleYake.getWindowSize(),
+                    articleYake.getNumber_of_keywords(),
+                    articleYake.getText()
             );
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             return false;
         }
         return true;

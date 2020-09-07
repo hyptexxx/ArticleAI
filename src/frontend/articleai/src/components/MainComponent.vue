@@ -22,10 +22,13 @@
       input(v-model="articleFile.meta.numberOfKeywords", type="number" id="numberOfKeywords")
       label(for="text") text
       input(v-model="articleFile.meta.text", type="text" id="text")
+      span
+        | {{classes}}
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить
       button(@click="addNewField", class="send-request-button") Добавить
       button(@click="saveResult", class="send-request-button") Сохранить результат
       button(@click="loadResult", class="send-request-button") Загрузить сохранённые результаты
+      button(@click="actualityAnalyse", class="send-request-button") Анализ актуальности
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
         input(v-model="response.score", type="number")
@@ -41,11 +44,13 @@ import { ArticleMutationModule } from '@/store/ArticleMutationModule'
 import ValidationYakeService from '@/services/implementation/ValidationYakeService'
 import FullArticle from '@/models/FullArticle'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
+import { Class } from '@/models/Class'
 
 @Component
 export default class MainComponent extends Mixins(RequestService, ArticleMutationModule, ValidationYakeService) {
   private useFileToTextAnalyse = false
   private AnalyseResponse: AnalyseResponse[] = []
+  private classes: Class[] = []
   private validationErrorsFromArticle: [string] = ['']
   private articleFile: ArticleFile = {
     file: null,
@@ -58,6 +63,10 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
       numberOfKeywords: 0,
       text: ''
     }
+  }
+
+  private async actualityAnalyse (): Promise<void> {
+    this.classes = await this.actualityAnalyseRequest(this.AnalyseResponse)
   }
 
   private deleteResult (elemToDelete: AnalyseResponse): void {

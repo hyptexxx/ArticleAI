@@ -5,6 +5,7 @@ import AnalyseResponse from '@/models/AnalyseResponse'
 import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 import FullArticle from '@/models/FullArticle'
+import {Class} from "@/models/Class";
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
@@ -41,6 +42,13 @@ export default class RequestService extends Vue implements RequestServiceInterfa
       formData.append('file', articleFile.file)
     }
     axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
+  }
+
+  async actualityAnalyseRequest (analyseResponse: AnalyseResponse[]): Promise<Class[]> {
+    const formData: FormData = new FormData()
+    formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    const result = await axios.post<Class[]>('http://localhost:8080/api/actuality/analyse', formData)
+    return result.data
   }
 
   private createFormDataForArticleFile (articleFile: ArticleFile, formData: FormData): FormData {

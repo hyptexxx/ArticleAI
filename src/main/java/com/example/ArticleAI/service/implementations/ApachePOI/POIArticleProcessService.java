@@ -76,17 +76,6 @@ public class POIArticleProcessService implements IPOIArticleProcessService {
 
     @Override
     public String removeEng() throws ParseException {
-        String[] result = this.parsedArticleText.split("\\.*?[.?!]");
-        String alphabet = "abcdefghijklmnopqrstuvwxyz";
-        for (String p : result) {
-            if (p.equals("") || p.equals(" ") || p.equals("\t") || p.equals("\n")) {
-                for (int pos = 0; pos < p.length(); pos++) {
-                    if(alphabet.matches(String.valueOf(p.charAt(pos)))){
-
-                    }
-                }
-            }
-        }
         return null;
     }
 
