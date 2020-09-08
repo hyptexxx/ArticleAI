@@ -22,12 +22,11 @@
       input(v-model="articleFile.meta.numberOfKeywords", type="number" id="numberOfKeywords")
       label(for="text") text
       input(v-model="articleFile.meta.text", type="text" id="text")
-      span
-        | {{classes}}
-      button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить
-      button(@click="addNewField", class="send-request-button") Добавить
+      div(v-for="actualityClass in classes")
+        | {{actualityClass.className}}   {{actualityClass.keywordText}}   {{actualityClass.classWeight}}
+      button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить в yake
+      button(@click="addNewField", class="send-request-button") Добавить ключевое слово
       button(@click="saveResult", class="send-request-button") Сохранить результат
-      button(@click="loadResult", class="send-request-button") Загрузить сохранённые результаты
       button(@click="actualityAnalyse", class="send-request-button") Анализ актуальности
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")

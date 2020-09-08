@@ -28,6 +28,7 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
     public List<Class> getExistingClassList(String keyword) {
         return jdbcTemplate.query("select c.class_id,\n" +
                 "       c.keyword_id,\n" +
+                "       keyword_text,\n" +
                 "       c.class_weight,\n" +
                 "       class_name\n" +
                 "from keywords\n" +
