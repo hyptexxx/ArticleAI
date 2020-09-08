@@ -5,7 +5,7 @@ import AnalyseResponse from '@/models/AnalyseResponse'
 import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 import FullArticle from '@/models/FullArticle'
-import {Class} from "@/models/Class";
+import { Class } from '@/models/Class'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
@@ -34,20 +34,43 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): void {
+  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): Promise<void> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
     this.createFormDataForArticleFile(articleFile, formData)
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
+    const result = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
+    if (result.status === 200) {
+      this.$notify({
+        group: 'foo',
+        type: 'success',
+        title: 'Результаты сохранены',
+        text: 'Сохренено'
+      })
+    } else {
+      this.$notify({
+        group: 'foo',
+        type: 'error',
+        title: 'Ошибка сохренения результатов',
+        text: 'Ошибка сохренения'
+      })
+    }
   }
 
   async actualityAnalyseRequest (analyseResponse: AnalyseResponse[]): Promise<Class[]> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
     const result = await axios.post<Class[]>('http://localhost:8080/api/actuality/analyse', formData)
+    if (!result.data) {
+      this.$notify({
+        group: 'foo',
+        type: 'error',
+        title: 'Классов с весом > 0 не найдено',
+        text: 'Анализ классов'
+      })
+    }
     return result.data
   }
 

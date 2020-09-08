@@ -1,5 +1,6 @@
 <template lang="pug">
   div(class="main-component")
+    notifications(group="foo", position="top right", ignoreDuplicates=true, classes="custom-player-alert ")
     .use-file-to-analyze-container
       label(for="useFileToTextAnalyse" class="label-use-file") Использовать текст файла
       input(v-model="useFileToTextAnalyse", type="checkbox", id="useFileToTextAnalyse")
@@ -27,7 +28,7 @@
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить в yake
       button(@click="addNewField", class="send-request-button") Добавить ключевое слово
       button(@click="saveResult", class="send-request-button") Сохранить результат
-      button(@click="actualityAnalyse", class="send-request-button") Анализ актуальности
+      button(@click="actualityAnalyse", class="send-request-button") Определить классы
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
         input(v-model="response.score", type="number")

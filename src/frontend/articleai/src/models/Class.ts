@@ -3,4 +3,5 @@ export interface Class{
   keywordId: number;
   classWeight: number;
   className: string;
+  keywordText: string;
 }

@@ -38,23 +38,12 @@ public class RESTFileController {
     private final
     IRequestService requestService;
 
-    private final
-    IYakeService yakeService;
 
-    private final
-    YakeDBService yakeDBService;
-
-    private final ClassesResolver classesResolver;
-
-
-    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService, IYakeService yakeService, YakeDBService yakeDBService, ClassesResolver classesResolver) {
+    public RESTFileController(Logger logger, IFileService fileService, IPOIService poiService, IRequestService requestService) {
         this.logger = logger;
         this.fileService = fileService;
         this.poiService = poiService;
         this.requestService = requestService;
-        this.yakeService = yakeService;
-        this.yakeDBService = yakeDBService;
-        this.classesResolver = classesResolver;
     }
 
     @PostMapping(value = "/api/files/analyze")
@@ -81,44 +70,5 @@ public class RESTFileController {
         }
     }
 
-    @PostMapping(value = "/api/yake/analyze")
-    public ResponseEntity<Object> analyseArticleText(ArticleYake articleYake) throws IOException {
-        if (requestService.sendRequest(articleYake).isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
-        } else {
-            return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
-        }
-    }
 
-    @PostMapping(value = "/api/actuality/analyse")
-    public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response) throws IOException {
-        List<String> keyWords = new ArrayList<>();
-        List<Class> classes = new ArrayList<>();
-        yakeService.parseYakeResponseJSON(response).forEach(yakeResponse -> {
-            keyWords.add(yakeResponse.getNgram());
-        });
-        classesResolver.setKeyWords(keyWords);
-        try {
-             classes = classesResolver.resolve();
-        } catch (EmptyKeywordListException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-        if (classes.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
-        }
-        return ResponseEntity.status(HttpStatus.OK).body(classes);
-    }
-
-    @PostMapping(value = "/api/yake/saveResultEntity")
-    public ResponseEntity<Object> saveResultEntity(@RequestParam("file") MultipartFile file,
-                                                   ArticleYake articleYake,
-                                                   @RequestParam("analyseResponse") String response) throws IOException {
-        if(yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake), yakeService.parseYakeResponseJSON(response))){
-            logger.info("Yake params saved");
-            return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
-        } else {
-            logger.info("Failed to save Yake params");
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
-        }
-    }
 }
