@@ -23,12 +23,15 @@
       input(v-model="articleFile.meta.numberOfKeywords", type="number" id="numberOfKeywords")
       label(for="text") text
       input(v-model="articleFile.meta.text", type="text" id="text")
+      span
+       | {{yandexResponse}}
       div(v-for="actualityClass in classes")
         | {{actualityClass.className}}   {{actualityClass.keywordText}}   {{actualityClass.classWeight}}
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить в yake
       button(@click="addNewField", class="send-request-button") Добавить ключевое слово
       button(@click="saveResult", class="send-request-button") Сохранить результат
       button(@click="actualityAnalyse", class="send-request-button") Определить классы
+      button(@click="sendRequestToYandex", class="send-request-button") test yandex request
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
         input(v-model="response.score", type="number")
@@ -51,6 +54,7 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
   private useFileToTextAnalyse = false
   private AnalyseResponse: AnalyseResponse[] = []
   private classes: Class[] = []
+  private yandexResponse = ''
   private validationErrorsFromArticle: [string] = ['']
   private articleFile: ArticleFile = {
     file: null,
@@ -63,6 +67,10 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
       numberOfKeywords: 0,
       text: ''
     }
+  }
+
+  private async sendRequestToYandex (): Promise<void> {
+    this.yandexResponse = await this.sendRequestToYandexFromServer()
   }
 
   private async actualityAnalyse (): Promise<void> {

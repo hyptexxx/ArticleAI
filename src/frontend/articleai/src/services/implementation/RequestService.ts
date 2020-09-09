@@ -15,10 +15,15 @@ export default class RequestService extends Vue implements RequestServiceInterfa
       formData.append('file', articleFile.file)
     }
     const response = await axios.post<AnalyseResponse[]>(
-      'http://localhost:8080/api/files/analyze',
+      '/api/files/analyze',
       this.createFormDataForArticleFile(articleFile, formData)
     )
     return response.data
+  }
+
+  async sendRequestToYandexFromServer (): Promise<string> {
+    const result = await axios.get<string>('http://localhost:8080/api/yandex/search_count')
+    return result.data
   }
 
   async sendTextAndAnalyse (articleFileMeta: ArticleFileMeta): Promise<AnalyseResponse[]> {
@@ -30,7 +35,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('windowSize', articleFileMeta.windowSize.toString())
     formData.append('number_of_keywords', articleFileMeta.numberOfKeywords.toString())
     formData.append('text', articleFileMeta.text)
-    const response = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/analyze', formData)
+    const response = await axios.post<AnalyseResponse[]>('/api/yake/analyze', formData)
     return response.data
   }
 
@@ -41,7 +46,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    const result = await axios.post<AnalyseResponse[]>('http://localhost:8080/api/yake/saveResultEntity', formData)
+    const result = await axios.post<AnalyseResponse[]>('/api/yake/saveResultEntity', formData)
     if (result.status === 200) {
       this.$notify({
         group: 'foo',
@@ -62,7 +67,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   async actualityAnalyseRequest (analyseResponse: AnalyseResponse[]): Promise<Class[]> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
-    const result = await axios.post<Class[]>('http://localhost:8080/api/actuality/analyse', formData)
+    const result = await axios.post<Class[]>('/api/actuality/analyse', formData)
     if (!result.data) {
       this.$notify({
         group: 'foo',
@@ -88,7 +93,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   async loadSavedResults (yakeId: number): Promise<FullArticle> {
     const formData: FormData = new FormData()
     formData.append('yakeId', yakeId.toString())
-    const response = await axios.post<FullArticle>('http://localhost:8080/api/yake/response', formData)
+    const response = await axios.post<FullArticle>('/api/yake/response', formData)
     return response.data
   }
 }

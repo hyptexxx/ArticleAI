@@ -18,7 +18,8 @@ module.exports = {
       ]
     },
     devServer: {
-      headers: { "Access-Control-Allow-Origin": "*" }
+      headers: { "Access-Control-Allow-Origin": "*" },
+      proxy: 'http://localhost:8080'
     },
     node: {
       fs: 'empty'
