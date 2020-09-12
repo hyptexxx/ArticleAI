@@ -22,7 +22,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   }
 
   async sendRequestToYandexFromServer (): Promise<string> {
-    const result = await axios.get<string>('http://localhost:8080/api/yandex/search_count')
+    const result = await axios.get<string>('/api/yandex/search_count')
     return result.data
   }
 

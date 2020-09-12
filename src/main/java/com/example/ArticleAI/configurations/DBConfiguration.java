@@ -15,7 +15,7 @@ public class DBConfiguration {
     public DataSource getDataSource() {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setUrl("jdbc:mysql://localhost:3306/article_ai?useUnicode=yes&characterEncoding=UTF-8&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC");
-        dataSource.setPassword("root");
+        dataSource.setPassword("DxWt80!XkCd%25");
         dataSource.setUsername("root");
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         return dataSource;
