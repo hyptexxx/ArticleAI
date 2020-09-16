@@ -1,5 +1,6 @@
 package com.example.ArticleAI.service.interfaces.ArticleFile;
 
+import com.example.ArticleAI.models.ArticleYake;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
@@ -16,4 +17,7 @@ public interface IFileService {
      * @return previously saved file
      */
     File getFile();
+
+    ArticleYake getTextFromFile (File article, ArticleYake yake);
+    ArticleYake getTextFromFile (MultipartFile article, ArticleYake yake);
 }
