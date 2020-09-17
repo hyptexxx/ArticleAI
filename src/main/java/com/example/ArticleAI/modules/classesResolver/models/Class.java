@@ -1,16 +1,16 @@
 package com.example.ArticleAI.modules.classesResolver.models;
 
-import java.math.BigDecimal;
-
 public class Class {
     private int classId;
     private int keywordId;
+    private String keywordText;
     private float classWeight;
     private String className;
 
-    public Class(int classId, int keywordId, float classWeight, String className) {
+    public Class(int classId, int keywordId, String keywordText, float classWeight, String className) {
         this.classId = classId;
         this.keywordId = keywordId;
+        this.keywordText = keywordText;
         this.classWeight = classWeight;
         this.className = className;
     }
@@ -18,6 +18,13 @@ public class Class {
     public Class() {
     }
 
+    public String getKeywordText() {
+        return keywordText;
+    }
+
+    public void setKeywordText(String keywordText) {
+        this.keywordText = keywordText;
+    }
 
     public int getClassId() {
         return classId;

@@ -13,4 +13,12 @@ public interface IRequestService {
      * @throws IOException
      */
     String sendRequest(ArticleYake articleYake) throws IOException;
+
+
+    /**
+     * @param searchQuery search keyword
+     * @return yandex search results
+     * @throws IOException
+     */
+    String sendRequestToYandex(String searchQuery) throws IOException;
 }

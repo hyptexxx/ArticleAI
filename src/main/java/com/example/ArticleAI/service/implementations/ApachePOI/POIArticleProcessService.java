@@ -81,6 +81,6 @@ public class POIArticleProcessService implements IPOIArticleProcessService {
 
     @Override
     public void setLowerCase() {
-        this.parsedArticleText = this.parsedArticleText.toLowerCase();
+//        this.parsedArticleText = this.parsedArticleText.toLowerCase();
     }
 }

@@ -1,5 +1,6 @@
 package com.example.ArticleAI.service.implementations.ArticleFile;
 
+import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -67,6 +68,16 @@ public class FileService implements IFileService {
     @Override
     public File getFile() {
         return importedFile;
+    }
+
+    @Override
+    public ArticleYake getTextFromFile(File article, ArticleYake yake) {
+        return null;
+    }
+
+    @Override
+    public ArticleYake getTextFromFile(MultipartFile article, ArticleYake yake) {
+        return null;
     }
 
     private static boolean isFileExists() {
