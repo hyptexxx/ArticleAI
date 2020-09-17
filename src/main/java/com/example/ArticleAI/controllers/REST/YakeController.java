@@ -66,10 +66,10 @@ public class YakeController {
                                                    @RequestParam("analyseResponse") String response) throws IOException {
         if(yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake), yakeService.parseYakeResponseJSON(response))){
             logger.info("Yake params saved");
-            return ResponseEntity.status(HttpStatus.OK).body(requestService.sendRequest(articleYake));
+            return ResponseEntity.status(HttpStatus.OK).body(null);
         } else {
             logger.info("Failed to save Yake params");
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
         }
     }
 }

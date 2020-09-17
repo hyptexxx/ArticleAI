@@ -7,12 +7,14 @@ import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 import com.itextpdf.text.pdf.parser.SimpleTextExtractionStrategy;
 import com.itextpdf.text.pdf.parser.TextExtractionStrategy;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.text.ParseException;
 
-public class ITextService  implements IITextService {
+@Service
+public class ITextService implements IITextService {
 
     private final
     IPOIArticleProcessService articleProcessService;
