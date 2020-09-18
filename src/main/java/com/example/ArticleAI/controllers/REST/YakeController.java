@@ -4,6 +4,7 @@ import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
 import com.example.ArticleAI.service.interfaces.ArticleFile.IFileService;
+import com.example.ArticleAI.service.interfaces.Classes.IClassesService;
 import com.example.ArticleAI.service.interfaces.RequestYake.IRequestService;
 import com.example.ArticleAI.service.interfaces.YakeService.IYakeService;
 import org.slf4j.Logger;
@@ -37,17 +38,19 @@ public class YakeController {
     private final
     IFileService fileService;
 
+    private final
+    IClassesService classesService;
 
-    public YakeController(IYakeService yakeService, YakeDBService yakeDBService, IRequestService requestService, IPOIService poiService, Logger logger, IFileService fileService) {
+
+    public YakeController(IYakeService yakeService, YakeDBService yakeDBService, IRequestService requestService, IPOIService poiService, Logger logger, IFileService fileService, IClassesService classesService) {
         this.yakeService = yakeService;
         this.yakeDBService = yakeDBService;
         this.requestService = requestService;
         this.poiService = poiService;
         this.logger = logger;
         this.fileService = fileService;
+        this.classesService = classesService;
     }
-
-
 
 
     @PostMapping(value = "/api/yake/analyze")
@@ -63,8 +66,11 @@ public class YakeController {
     @PostMapping(value = "/api/yake/saveResultEntity")
     public ResponseEntity<Object> saveResultEntity(@RequestParam("file") MultipartFile file,
                                                    ArticleYake articleYake,
-                                                   @RequestParam("analyseResponse") String response) throws IOException {
-        if(yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake), yakeService.parseYakeResponseJSON(response))){
+                                                   @RequestParam("analyseResponse") String response,
+                                                   @RequestParam("classes") String classes) throws IOException {
+        if (yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake),
+                yakeService.parseYakeResponseJSON(response),
+                classesService.parseClasses(classes))) {
             logger.info("Yake params saved");
             return ResponseEntity.status(HttpStatus.OK).body(null);
         } else {

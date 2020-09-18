@@ -5,6 +5,7 @@ import com.example.ArticleAI.mappers.ArticleYakeMapper;
 import com.example.ArticleAI.mappers.YakeResponseMapper;
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.YakeResponse;
+import com.example.ArticleAI.modules.classesResolver.models.Class;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -25,7 +26,7 @@ public class YakeDBDAO implements IYakeDBDAO {
     }
 
     @Override
-    public boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList) {
+    public boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(connection -> {
@@ -43,6 +44,16 @@ public class YakeDBDAO implements IYakeDBDAO {
                         keyHolder.getKey(),
                         yakeResponse.getNgram(),
                         yakeResponse.getScore());
+            }
+
+            for (Class currClass: classes) {
+                jdbcTemplate.update("insert into classes(class_id, keyword_id, class_weight, class_name, article_id) values (?,?,?,?,?)",
+                        0,
+                        0,
+                        currClass.getClassWeight(),
+                        currClass.getClassName(),
+                        keyHolder.getKey()
+                );
             }
 
             jdbcTemplate.update(

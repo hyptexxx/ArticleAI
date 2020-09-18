@@ -39,9 +39,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): Promise<void> {
+  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): Promise<void> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('classes', JSON.stringify(classes))
     this.createFormDataForArticleFile(articleFile, formData)
     if (articleFile.file) {
       formData.append('file', articleFile.file)

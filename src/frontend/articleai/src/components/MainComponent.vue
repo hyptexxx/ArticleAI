@@ -107,7 +107,7 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
         this.validationErrorsFromArticle = this.getValidationErrorsFromArticle(this.articleFile)
       } else {
         this.validationErrorsFromArticle = ['']
-        this.saveResultRequest(this.AnalyseResponse, this.articleFile)
+        this.saveResultRequest(this.AnalyseResponse, this.articleFile, this.classes)
       }
     }
   }
