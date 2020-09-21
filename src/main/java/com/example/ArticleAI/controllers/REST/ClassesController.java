@@ -29,13 +29,15 @@ public class ClassesController {
     }
 
     @PostMapping(value = "/api/actuality/analyse")
-    public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response) throws IOException {
+    public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response,
+                                                   @RequestParam("articleId") Integer articleId) throws IOException {
         List<String> keyWords = new ArrayList<>();
         List<Class> classes = new ArrayList<>();
         yakeService.parseYakeResponseJSON(response).forEach(yakeResponse -> {
             keyWords.add(yakeResponse.getNgram());
         });
         classesResolver.setKeyWords(keyWords);
+        classesResolver.setArticleId(articleId);
         try {
             classes = classesResolver.resolve();
         } catch (EmptyKeywordListException e) {

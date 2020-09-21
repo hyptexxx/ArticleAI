@@ -10,7 +10,7 @@ public class KeywordMapper implements RowMapper<Keyword> {
     @Override
     public Keyword mapRow(ResultSet rs, int rowNum) throws SQLException {
         Keyword keyword = new Keyword();
-        keyword.setKeywordId(rs.getInt("keyword_id"));
+        keyword.setKeywordId(rs.getInt("id"));
         keyword.setKeywordText(rs.getString("keyword_text"));
         return keyword;
     }

@@ -8,5 +8,5 @@ import java.util.List;
 public interface IClassesResolverDAO {
     List<Class> getExistingClassList(String keyword);
     List<Keyword> getExistingKeywordsList();
-    boolean saveNewKeyword(String keyword);
+    boolean saveNewKeyword(String keyword, Integer articleId);
 }

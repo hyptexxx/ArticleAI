@@ -8,7 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 public interface IYakeDBDAO {
-    boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes);
+    Integer saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes);
 
     List<YakeResponse> getSavedYakeResponse(Integer yakeId);
 

@@ -13,6 +13,7 @@ import java.util.List;
 @Service
 public class ClassesResolver {
     private List<String> keyWords;
+    private Integer articleId;
 
     private final
     IClassesResolverService classesResolverService;
@@ -25,6 +26,11 @@ public class ClassesResolver {
         this.keyWords = keyWords;
     }
 
+
+    public void setArticleId(Integer articleId) {
+        this.articleId = articleId;
+    }
+
     public List<Class> resolve() throws EmptyKeywordListException {
         List<Keyword> existingKeywordsList = classesResolverService.getExistingKeywordsList();
         List<Class> existingClassList;
@@ -35,7 +41,7 @@ public class ClassesResolver {
                     existingClassList = classesResolverService.getExistingClassList(keyword);
                     resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
                 } else {
-                    classesResolverService.saveNewKeyword(keyword);
+                    classesResolverService.saveNewKeyword(keyword, articleId);
                 }
             }
         } else {

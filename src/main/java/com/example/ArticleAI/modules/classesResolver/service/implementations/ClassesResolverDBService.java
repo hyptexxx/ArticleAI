@@ -28,7 +28,7 @@ public class ClassesResolverDBService implements IClassesResolverDBService {
     }
 
     @Override
-    public boolean saveNewKeyword(String keyword) {
-        return classesResolverDAO.saveNewKeyword(keyword);
+    public boolean saveNewKeyword(String keyword, Integer articleId) {
+        return classesResolverDAO.saveNewKeyword(keyword, articleId);
     }
 }

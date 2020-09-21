@@ -30,7 +30,7 @@
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить в yake
       button(@click="addNewField", class="send-request-button") Добавить ключевое слово
       button(@click="saveResult", class="send-request-button") Сохранить результат
-      button(@click="actualityAnalyse", class="send-request-button") Определить классы
+      button(@click="actualityAnalyse", v-if="articleId && articleId >= 0" class="send-request-button") Определить классы
       button(@click="sendRequestToYandex", class="send-request-button") test yandex request
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
@@ -55,6 +55,7 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
   private AnalyseResponse: AnalyseResponse[] = []
   private classes: Class[] = []
   private yandexResponse = ''
+  private articleId: number | null = null
   private validationErrorsFromArticle: [string] = ['']
   private articleFile: ArticleFile = {
     file: null,
@@ -74,7 +75,9 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
   }
 
   private async actualityAnalyse (): Promise<void> {
-    this.classes = await this.actualityAnalyseRequest(this.AnalyseResponse)
+    if (this.articleId) {
+      this.classes = await this.actualityAnalyseRequest(this.AnalyseResponse, this.articleId)
+    }
   }
 
   private deleteResult (elemToDelete: AnalyseResponse): void {
@@ -101,13 +104,17 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
     })
   }
 
-  private saveResult (): void {
+  private async saveResult (): Promise<void> {
     if (this.AnalyseResponse && this.articleFile) {
       if (this.getValidationErrorsFromArticle(this.articleFile).length > 0) {
         this.validationErrorsFromArticle = this.getValidationErrorsFromArticle(this.articleFile)
       } else {
         this.validationErrorsFromArticle = ['']
-        this.saveResultRequest(this.AnalyseResponse, this.articleFile, this.classes)
+        const articleId = await this.saveResultRequest(this.AnalyseResponse, this.articleFile, this.classes)
+        if (articleId) {
+          this.articleId = articleId
+          console.log(this.articleId)
+        }
       }
     }
   }

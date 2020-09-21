@@ -39,7 +39,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): Promise<void> {
+  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): Promise<number | null> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
     formData.append('classes', JSON.stringify(classes))
@@ -47,7 +47,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    const result = await axios.post<AnalyseResponse[]>('/api/yake/saveResultEntity', formData)
+    const result = await axios.post<number>('/api/yake/saveResultEntity', formData)
     if (result.status === 200) {
       this.$notify({
         group: 'foo',
@@ -55,6 +55,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
         title: 'Результаты сохранены',
         text: 'Сохренено'
       })
+      return result.data
     } else {
       this.$notify({
         group: 'foo',
@@ -62,12 +63,14 @@ export default class RequestService extends Vue implements RequestServiceInterfa
         title: 'Ошибка сохренения результатов',
         text: 'Ошибка сохренения'
       })
+      return null
     }
   }
 
-  async actualityAnalyseRequest (analyseResponse: AnalyseResponse[]): Promise<Class[]> {
+  async actualityAnalyseRequest (analyseResponse: AnalyseResponse[], articleId: number): Promise<Class[]> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('articleId', articleId.toString())
     const result = await axios.post<Class[]>('/api/actuality/analyse', formData)
     if (!result.data) {
       this.$notify({

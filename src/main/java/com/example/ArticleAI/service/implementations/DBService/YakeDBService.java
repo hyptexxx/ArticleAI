@@ -21,7 +21,7 @@ public class YakeDBService implements IYakeDBService {
     }
 
     @Override
-    public boolean saveAnalysedArticleToDB(MultipartFile file, ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
+    public Integer saveAnalysedArticleToDB(MultipartFile file, ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
         return iYakeDBDAO.saveAnalysedArticleToDB(articleYake, yakeResponseList, classes);
     }
 

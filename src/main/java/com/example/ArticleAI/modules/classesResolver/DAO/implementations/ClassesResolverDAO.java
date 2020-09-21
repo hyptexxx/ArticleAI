@@ -32,7 +32,7 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
                 "       c.class_weight,\n" +
                 "       class_name\n" +
                 "from keywords\n" +
-                "         inner join classes c on keywords.keyword_id = c.keyword_id\n" +
+                "         inner join classes c on keywords.id = c.keyword_id\n" +
                 "where keyword_text like ?", new ClassMapper(), keyword);
     }
 
@@ -42,16 +42,17 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
     }
 
     @Override
-    public boolean saveNewKeyword(String keyword) {
+    public boolean saveNewKeyword(String keyword, Integer articleId) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
                         .prepareStatement(
-                                "INSERT INTO keywords(keyword_text) VALUES (?)",
+                                "INSERT INTO keywords(keyword_text, article_id) VALUES (?,?)",
                                 PreparedStatement.RETURN_GENERATED_KEYS
                         );
                 ps.setString(1, keyword);
+                ps.setInt(2, articleId);
                 return ps;
             }, keyHolder);
         } catch (DataAccessException e) {

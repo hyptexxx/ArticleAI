@@ -12,6 +12,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.util.List;
 
@@ -26,13 +27,13 @@ public class YakeDBDAO implements IYakeDBDAO {
     }
 
     @Override
-    public boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
+    public Integer saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
                         .prepareStatement(
-                                "INSERT INTO article(article_id) VALUES (?)",
+                                "INSERT INTO article(id) VALUES (?)",
                                 PreparedStatement.RETURN_GENERATED_KEYS
                         );
                 ps.setInt(1, 0);
@@ -47,12 +48,11 @@ public class YakeDBDAO implements IYakeDBDAO {
             }
 
             for (Class currClass: classes) {
-                jdbcTemplate.update("insert into classes(class_id, keyword_id, class_weight, class_name, article_id) values (?,?,?,?,?)",
+                jdbcTemplate.update("insert into classes(class_id, keyword_id, class_weight, class_name) values (?,?,?,?,?)",
                         0,
                         0,
                         currClass.getClassWeight(),
-                        currClass.getClassName(),
-                        keyHolder.getKey()
+                        currClass.getClassName()
                 );
             }
 
@@ -72,9 +72,9 @@ public class YakeDBDAO implements IYakeDBDAO {
                     articleYake.getText()
             );
         } catch (DataAccessException e) {
-            return false;
+            System.out.println(e);
         }
-        return true;
+        return ((BigInteger) keyHolder.getKey()).intValue();
     }
 
     @Override
