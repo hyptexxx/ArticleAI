@@ -5,12 +5,14 @@ import com.example.ArticleAI.mappers.ArticleYakeMapper;
 import com.example.ArticleAI.mappers.YakeResponseMapper;
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.YakeResponse;
+import com.example.ArticleAI.modules.classesResolver.models.Class;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
+import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.util.List;
 
@@ -25,13 +27,13 @@ public class YakeDBDAO implements IYakeDBDAO {
     }
 
     @Override
-    public boolean saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList) {
+    public Integer saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
                         .prepareStatement(
-                                "INSERT INTO article(article_id) VALUES (?)",
+                                "INSERT INTO article(id) VALUES (?)",
                                 PreparedStatement.RETURN_GENERATED_KEYS
                         );
                 ps.setInt(1, 0);
@@ -43,6 +45,15 @@ public class YakeDBDAO implements IYakeDBDAO {
                         keyHolder.getKey(),
                         yakeResponse.getNgram(),
                         yakeResponse.getScore());
+            }
+
+            for (Class currClass: classes) {
+                jdbcTemplate.update("insert into classes(class_id, keyword_id, class_weight, class_name) values (?,?,?,?,?)",
+                        0,
+                        0,
+                        currClass.getClassWeight(),
+                        currClass.getClassName()
+                );
             }
 
             jdbcTemplate.update(
@@ -61,9 +72,9 @@ public class YakeDBDAO implements IYakeDBDAO {
                     articleYake.getText()
             );
         } catch (DataAccessException e) {
-            return false;
+            System.out.println(e);
         }
-        return true;
+        return ((BigInteger) keyHolder.getKey()).intValue();
     }
 
     @Override
