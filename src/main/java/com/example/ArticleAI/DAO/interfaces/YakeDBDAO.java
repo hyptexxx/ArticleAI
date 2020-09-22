@@ -48,7 +48,7 @@ public class YakeDBDAO implements IYakeDBDAO {
             }
 
             for (Class currClass: classes) {
-                jdbcTemplate.update("insert into classes(class_id, keyword_id, class_weight, class_name) values (?,?,?,?,?)",
+                jdbcTemplate.update("insert into classes(id, keyword_id, class_weight, class_name) values (?,?,?,?,?)",
                         0,
                         0,
                         currClass.getClassWeight(),
