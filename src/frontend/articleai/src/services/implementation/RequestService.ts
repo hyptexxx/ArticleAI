@@ -19,13 +19,14 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  async getRecommendationsRequest (actuality: ClassActuality[]): Promise<string> {
+  async getRecommendationsRequest (actuality: ClassActuality[], articleId: number): Promise<string> {
     const formData: FormData = new FormData()
     formData.append('actualityPair', JSON.stringify(actuality))
     const response = await axios.get<string>(
-      '/api/actuality/analyze', {
+      '/api/recommendations', {
         params: {
-          actualityPair: formData
+          actualityPair: formData,
+          articleId: articleId
         }
       })
     return response.data

@@ -24,6 +24,6 @@ public class ActualityResolverDAO implements IActualityResolverDAO {
                 actuality.getClassId(),
                 actuality.getActuality()
         }));
-        jdbcTemplate.batchUpdate("insert into class_actuality(class_id, actuality) VALUES (?,?)", batch);
+        jdbcTemplate.batchUpdate("insert into class_actuality(id, actuality) VALUES (?,?)", batch);
     }
 }

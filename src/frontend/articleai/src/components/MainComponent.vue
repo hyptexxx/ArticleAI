@@ -93,7 +93,9 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
   }
 
   private async getRecommendations (): Promise<void> {
-    this.recommendation = await this.getRecommendationsRequest(this.classesActuality)
+    if (this.articleId) {
+      this.recommendation = await this.getRecommendationsRequest(this.classesActuality, this.articleId)
+    }
   }
 
   private loadResult (): void {
