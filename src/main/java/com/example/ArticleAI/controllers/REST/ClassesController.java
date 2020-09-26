@@ -28,7 +28,7 @@ public class ClassesController {
         this.classesResolver = classesResolver;
     }
 
-    @PostMapping(value = "/api/actuality/analyse")
+    @PostMapping(value = "/api/classes/analyse")
     public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response,
                                                    @RequestParam("articleId") Integer articleId) throws IOException {
         List<String> keyWords = new ArrayList<>();

@@ -6,9 +6,32 @@ import ArticleFile from '@/models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 import FullArticle from '@/models/FullArticle'
 import { Class } from '@/models/Class'
+import { ClassActuality } from '@/models/ClassActuality'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
+  async getActualityRequest (classes: Class[]): Promise<ClassActuality[]> {
+    const formData: FormData = new FormData()
+    formData.append('classes', JSON.stringify(classes))
+    const response = await axios.post<ClassActuality[]>(
+      '/api/actuality/analyze', formData
+    )
+    return response.data
+  }
+
+  async getRecommendationsRequest (actuality: ClassActuality[], articleId: number): Promise<string> {
+    const formData: FormData = new FormData()
+    formData.append('actualityPair', JSON.stringify(actuality))
+    const response = await axios.get<string>(
+      '/api/recommendations', {
+        params: {
+          actualityPair: formData,
+          articleId: articleId
+        }
+      })
+    return response.data
+  }
+
   async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse[]> {
     const formData: FormData = new FormData()
     if (articleFile.file) {
@@ -67,11 +90,11 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     }
   }
 
-  async actualityAnalyseRequest (analyseResponse: AnalyseResponse[], articleId: number): Promise<Class[]> {
+  async classesAnalyseRequest (analyseResponse: AnalyseResponse[], articleId: number): Promise<Class[]> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
     formData.append('articleId', articleId.toString())
-    const result = await axios.post<Class[]>('/api/actuality/analyse', formData)
+    const result = await axios.post<Class[]>('/api/classes/analyse', formData)
     if (!result.data) {
       this.$notify({
         group: 'foo',

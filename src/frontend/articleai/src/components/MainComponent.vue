@@ -30,8 +30,9 @@
       button(@click="sendRequest", class="send-request-button" :disabled="!AnalyseResponse") Отправить в yake
       button(@click="addNewField", class="send-request-button") Добавить ключевое слово
       button(@click="saveResult", class="send-request-button") Сохранить результат
+      button(@click="getRecommendations", class="send-request-button") Получить рекомендации
       button(@click="actualityAnalyse", v-if="articleId && articleId >= 0" class="send-request-button") Определить классы
-      button(@click="sendRequestToYandex", class="send-request-button") test yandex request
+      button(@click="getActuality", class="send-request-button") определить актуальность
       div(v-for="response in AnalyseResponse")
         input(v-model="response.ngram")
         input(v-model="response.score", type="number")
@@ -48,13 +49,16 @@ import ValidationYakeService from '@/services/implementation/ValidationYakeServi
 import FullArticle from '@/models/FullArticle'
 import ArticleFileMeta from '@/models/ArticleFile/ArticleFileMeta'
 import { Class } from '@/models/Class'
+import { ClassActuality } from '@/models/ClassActuality'
 
 @Component
 export default class MainComponent extends Mixins(RequestService, ArticleMutationModule, ValidationYakeService) {
   private useFileToTextAnalyse = false
   private AnalyseResponse: AnalyseResponse[] = []
   private classes: Class[] = []
+  private classesActuality: ClassActuality[] = []
   private yandexResponse = ''
+  private recommendation = ''
   private articleId: number | null = null
   private validationErrorsFromArticle: [string] = ['']
   private articleFile: ArticleFile = {
@@ -70,18 +74,28 @@ export default class MainComponent extends Mixins(RequestService, ArticleMutatio
     }
   }
 
+  private async getActuality (): Promise<void> {
+    this.classesActuality = await this.getActualityRequest(this.classes)
+  }
+
   private async sendRequestToYandex (): Promise<void> {
     this.yandexResponse = await this.sendRequestToYandexFromServer()
   }
 
   private async actualityAnalyse (): Promise<void> {
     if (this.articleId) {
-      this.classes = await this.actualityAnalyseRequest(this.AnalyseResponse, this.articleId)
+      this.classes = await this.classesAnalyseRequest(this.AnalyseResponse, this.articleId)
     }
   }
 
   private deleteResult (elemToDelete: AnalyseResponse): void {
     this.AnalyseResponse.splice(this.AnalyseResponse.indexOf(elemToDelete), 1)
+  }
+
+  private async getRecommendations (): Promise<void> {
+    if (this.articleId) {
+      this.recommendation = await this.getRecommendationsRequest(this.classesActuality, this.articleId)
+    }
   }
 
   private loadResult (): void {

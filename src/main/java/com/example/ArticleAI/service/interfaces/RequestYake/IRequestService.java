@@ -1,6 +1,8 @@
 package com.example.ArticleAI.service.interfaces.RequestYake;
 
 import com.example.ArticleAI.models.ArticleYake;
+import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
+import com.example.ArticleAI.modules.recomendationsResolver.models.Recommendation;
 import org.apache.commons.io.FileExistsException;
 
 import java.io.IOException;
