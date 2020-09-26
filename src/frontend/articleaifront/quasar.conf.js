@@ -50,7 +50,7 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
-      vueRouterMode: 'hash', // available values: 'hash', 'history'
+      vueRouterMode: 'history', // available values: 'hash', 'history'
 
       // transpile: false,
 
@@ -71,6 +71,16 @@ module.exports = configure(function (ctx) {
       // https://quasar.dev/quasar-cli/handling-webpack
       extendWebpack (cfg) {
         // linting is slow in TS projects, we execute it only for production builds
+        cfg.module.rules.push({
+          test: /\.pug$/,
+          loader: 'pug-plain-loader'
+        })
+        cfg.module.rules.push({
+          enforce: 'pre',
+          test: /\.(js|vue)$/,
+          loader: 'eslint-loader',
+          exclude: /node_modules/
+        })
         if (ctx.prod) {
           cfg.module.rules.push({
             enforce: 'pre',
@@ -93,7 +103,13 @@ module.exports = configure(function (ctx) {
     framework: {
       iconSet: 'material-icons', // Quasar icon set
       lang: 'en-us', // Quasar language pack
-      config: {},
+      config: {
+        // dark: 'true',
+        loadingBar: {
+          color: 'orange',
+          size: '3px'
+        }
+      },
 
       // Possible values for "importStrategy":
       // * 'auto' - (DEFAULT) Auto-import needed Quasar components & directives
@@ -108,7 +124,12 @@ module.exports = configure(function (ctx) {
       // directives: [],
 
       // Quasar plugins
-      plugins: []
+      plugins: [
+        'LoadingBar',
+        'Notify',
+        'LocalStorage'
+      ],
+
     },
 
     // animations: 'all', // --- includes all animations
