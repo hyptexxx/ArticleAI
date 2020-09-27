@@ -51,7 +51,14 @@ module.exports = configure(function (ctx) {
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-build
     build: {
       vueRouterMode: 'history', // available values: 'hash', 'history'
-
+      env: ctx.dev
+        ? { // so on dev we'll have
+          API_BASE_URL: 'localhost:8080/api/'
+        }
+        : { // and on build (production):
+          API_BASE_URL: 'api/'
+        },
+      publicPath: ctx.dev ? '' : '',
       // transpile: false,
 
       // Add dependencies for transpiling with Babel (Array of string/regex)
@@ -94,9 +101,16 @@ module.exports = configure(function (ctx) {
 
     // Full list of options: https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-devServer
     devServer: {
-      https: false,
-      port: 8080,
-      open: true // opens browser window automatically
+      proxy: {
+        // proxy all requests starting with /api to jsonplaceholder
+        '/api': {
+          target: 'localhost:8080',
+          changeOrigin: true,
+          pathRewrite: {
+            '^/api': ''
+          }
+        }
+      }
     },
 
     // https://quasar.dev/quasar-cli/quasar-conf-js#Property%3A-framework
@@ -128,8 +142,7 @@ module.exports = configure(function (ctx) {
         'LoadingBar',
         'Notify',
         'LocalStorage'
-      ],
-
+      ]
     },
 
     // animations: 'all', // --- includes all animations

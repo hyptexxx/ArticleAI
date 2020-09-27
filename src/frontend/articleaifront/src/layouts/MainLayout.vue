@@ -5,7 +5,7 @@ q-layout(view='lHh Lpr lFf')
       q-btn(flat='' dense='' round='' icon='menu' aria-label='Menu' @click='leftDrawerOpen = !leftDrawerOpen')
       q-toolbar-title
         | Актуальность статей
-  q-drawer(v-model='leftDrawerOpen' show-if-above='' bordered='' content-class='bg-grey-1')
+  q-drawer(v-model='leftDrawerOpen'  bordered='' content-class='bg-grey-1')
   q-page-container
     router-view
 </template>

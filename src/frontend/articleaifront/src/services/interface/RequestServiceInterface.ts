@@ -1,7 +1,7 @@
 import AnalyseResponse from '../../models/AnalyseResponse.js'
 import ArticleFile from '../../models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '../../models/ArticleFile/ArticleFileMeta'
-import FullArticle from '../../models/FullArticle'
+import { FullArticle } from '../../models/FullArticle'
 
 export default interface RequestServiceInterface{
   sendAndAnalyse(articleFile: ArticleFile): Promise<AnalyseResponse[]>;
