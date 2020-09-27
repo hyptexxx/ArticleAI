@@ -26,13 +26,13 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
 
     @Override
     public List<Class> getExistingClassList(String keyword) {
-        return jdbcTemplate.query("select c.class_id,\n" +
+        return jdbcTemplate.query("select c.id,\n" +
                 "       c.keyword_id,\n" +
                 "       keyword_text,\n" +
                 "       c.class_weight,\n" +
                 "       class_name\n" +
                 "from keywords\n" +
-                "         inner join classes c on keywords.keyword_id = c.keyword_id\n" +
+                "         inner join classes c on keywords.id = c.keyword_id\n" +
                 "where keyword_text like ?", new ClassMapper(), keyword);
     }
 

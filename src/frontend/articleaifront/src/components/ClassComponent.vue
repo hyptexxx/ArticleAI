@@ -56,8 +56,17 @@
                   q-popup-edit(v-model='props.row.score' title='Редактировать значение важности' buttons='')
                     q-input(type='number' v-model='props.row.score' dense='' autofocus='')
 
-        q-step(:name='4' title='Ad template' icon='assignment' style='min-height: 200px;')
-          | Анализ актуальности.
+        q-step(:name='4' title='Анализ актуальности' icon='assignment' style='min-height: 200px;')
+          q-table(
+            title='Класс-актуальность'
+            :data='classes'
+            :separator='separator'
+            virtual-scroll
+            :columns='classColumns'
+            :loading="loading"
+            pagination.sync="pagination"
+            :rows-per-page-options="[0]"
+            row-key='ngram')
 
         q-step(:name='5' title='Рекомендации' icon='add_comment' style='min-height: 200px;')
           | Try out different ad text to see what brings in the most customers, and learn how to
@@ -82,11 +91,11 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
-import { Facultet, FullStudentResultInfo } from 'src/models/FullArticle'
+import { Component, Mixins, Watch } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse from 'src/models/AnalyseResponse'
+import { Class } from 'src/models/Class'
 
 @Component
 export default class ClassComponent extends Mixins(RequestService) {
@@ -94,7 +103,6 @@ export default class ClassComponent extends Mixins(RequestService) {
   private separator = 'cell'
   private pagination = { rowsPerPage: 0 }
   private step = 1
-  private AnalyseResponse: AnalyseResponse[] = []
 
   private articleFile: ArticleFile = {
     file: null,
@@ -120,64 +128,58 @@ export default class ClassComponent extends Mixins(RequestService) {
     this.loading = false
   }
 
-  private nextHandler (): void {
-    if (this.step === 3) {
-      // this.loading = true
-      this.articleFile.file = this.file
-      // this.AnalyseResponse = await this.sendAndAnalyse(this.articleFile)
-      this.loading = false
+  private async nextHandler (): Promise<void> {
+    this.loading = true
+    switch (this.step) {
+      case 3:
+        this.articleFile.file = this.file
+        this.data = await this.sendAndAnalyse(this.articleFile)
+        break
+      case 4:
+        this.classes = await this.actualityAnalyseRequest(this.data)
+        break
     }
+    this.loading = false
   }
 
-  private columns = [
-    {
-      name: 'ngram',
-      required: true,
-      label: 'Ключевое слово',
-      align: 'center'
-    },
-    { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }
-  ]
+  @Watch('data')
+  private dataWatcher (): void {
+    console.log(this.data)
+  }
+
+  private columns = [{
+    name: 'ngram',
+    required: true,
+    label: 'Ключевое слово',
+    align: 'center'
+  },
+  { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
 
   original: AnalyseResponse[] = [{
     ngram: 'Поле для заполнения',
     score: 0.0
   }]
 
-  data: AnalyseResponse[] = [
-    {
-      ngram: '',
-      score: 0
-    }
-  ]
-
-  private facultetArr: Facultet[] = [{
-    facultetId: 0,
-    facultetText: ''
-  }]
-
-  private facultet: Facultet | null = {
-    facultetId: 0,
-    facultetText: ''
-  };
-
-  private fullDataColumns = [{
-    family: 'name',
-    required: true,
-    label: 'Дата',
-    align: 'center',
-    field: (row: FullStudentResultInfo) => row.realtime
-  }, {
-    name: 'score',
-    align: 'center',
-    label: 'Отметка',
-    field: 'score',
-    sortable: true
-  }]
-
-  private fullData: FullStudentResultInfo[] = [{
-    realtime: new Date(),
+  data: AnalyseResponse[] = [{
+    ngram: '',
     score: 0
+  }]
+
+  private classColumns = [{
+    name: 'keywordText',
+    required: true,
+    label: 'Ключевое слово',
+    align: 'center'
+  },
+  { name: 'className', label: 'Класс', field: 'Класс', align: 'center', style: 'width: 10px' },
+  { name: 'classWeight', label: 'Вес', field: 'Вес', align: 'center', style: 'width: 10px' }]
+
+  classes: Class[] = [{
+    classId: 0,
+    keywordId: 0,
+    classWeight: 0,
+    className: '',
+    keywordText: ''
   }]
 }
 </script>

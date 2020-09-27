@@ -7,8 +7,13 @@ import org.springframework.web.bind.annotation.RequestMethod;
 @Controller
 public class MainPageController {
 
-    @RequestMapping(value = "/", method = RequestMethod.GET)
-    public String getMainPage(){
+    @RequestMapping(value = "/**/{path:[^\\\\.]*}", method = RequestMethod.GET)
+    public String catchAllPath () {
+        return "main";
+    }
+
+    @RequestMapping(value = "", method = RequestMethod.GET)
+    public String main () {
         return "main";
     }
 }

@@ -21,7 +21,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   }
 
   async sendRequestToYandexFromServer (): Promise<string> {
-    const result = await this.$axios.get<string>('/yandex/search_count')
+    const result = await this.$axios.get<string>('/api/yandex/search_count')
     return result.data
   }
 
@@ -34,7 +34,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('windowSize', articleFileMeta.windowSize.toString())
     formData.append('number_of_keywords', articleFileMeta.numberOfKeywords.toString())
     formData.append('text', articleFileMeta.text)
-    const response = await this.$axios.post<AnalyseResponse[]>('/yake/analyze', formData)
+    const response = await this.$axios.post<AnalyseResponse[]>('/api/yake/analyze', formData)
     return response.data
   }
 
@@ -45,7 +45,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    const result = await this.$axios.post<AnalyseResponse[]>('/yake/saveResultEntity', formData)
+    const result = await this.$axios.post<AnalyseResponse[]>('/api/yake/saveResultEntity', formData)
     if (result.status === 200) {
       console.log('notify')
     } else {
@@ -56,7 +56,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   async actualityAnalyseRequest (analyseResponse: AnalyseResponse[]): Promise<Class[]> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
-    const result = await this.$axios.post<Class[]>('/actuality/analyse', formData)
+    const result = await this.$axios.post<Class[]>('/api/actuality/analyse', formData)
     if (!result.data) {
       console.log('notify')
     }
@@ -77,7 +77,7 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   async loadSavedResults (yakeId: number): Promise<FullArticle> {
     const formData: FormData = new FormData()
     formData.append('yakeId', yakeId.toString())
-    const response = await this.$axios.post<FullArticle>('/yake/response', formData)
+    const response = await this.$axios.post<FullArticle>('/api/yake/response', formData)
     return response.data
   }
 }
