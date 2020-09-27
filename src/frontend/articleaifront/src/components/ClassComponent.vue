@@ -1,36 +1,185 @@
-<template>
-  <div>
-    <p>{{ title }}</p>
-    <ul>
-      <li v-for="todo in todos" :key="todo.id" @click="increment">
-        {{ todo.id }} - {{ todo.content }}
-      </li>
-    </ul>
-    <p>Count: {{ todoCount }} / {{ meta.totalCount }}</p>
-    <p>Active: {{ active ? 'yes' : 'no' }}</p>
-    <p>Clicks on todos: {{ clickCount }}</p>
-  </div>
+<template lang="pug">
+  q-card(style='width: 100%; height: 100%; padding: 20px')
+    q-card-section
+      q-stepper(v-model='step' ref='stepper' color='primary' animated='')
+
+        q-step(:name='1' title='Загрузите публикацию' icon='settings' :done='step > 1' style='min-height: 200px;')
+          q-file(filled='' bottom-slots='' v-model='file' label='Публикация' counter='' max-files='12')
+            template(v-slot:before='')
+              q-icon(name='folder_open')
+            template(v-slot:hint='')
+              | Выберите публикацию для анализа
+            template(v-slot:append='')
+              q-btn(round='' dense='' flat='' icon='add' @click.stop='')
+
+        q-step(:name='2' caption='не обязательно' title='Определение параметров YAKE' icon='assignment' style='min-height: 200px;')
+          .q-pa-md
+            q-input(v-model='articleFile.meta.language' label='language')
+            q-input(v-model='articleFile.meta.maxNgramSize' label='maxNgramSize')
+            q-input(v-model='articleFile.meta.deduplicationThresold' label='deduplication_thresold')
+            q-input(v-model='articleFile.meta.deduplicationAlgo' label='deduplication_algo')
+            q-input(v-model='articleFile.meta.windowSize' label='windowSize')
+            q-input(v-model='articleFile.meta.numberOfKeywords' label='numberOfKeywords')
+
+        q-step(:name='3' title='Определение ключевых слов' icon='create_new_folder' :done='step > 2' style='min-height: 200px;')
+          q-btn(color='green' :disable='loading' label='Добавить ключевое слово' @click='addRow')
+          q-btn(color='green' :disable='loading' label='Сохранить результат' @click='addRow')
+          q-item.q-item__label--header
+          q-table(
+              title='Ключевые слова'
+              :data='data'
+              :separator='separator'
+              virtual-scroll
+              :columns='columns'
+              :loading="loading"
+              pagination.sync="pagination"
+              :rows-per-page-options="[0]"
+              row-key='ngram')
+            template(v-slot:header='props')
+              q-tr(:props='props')
+                q-th(auto-width='')
+                  | Удалить ключевое слово
+                q-th(v-for='col in props.cols' :key='col.name' :props='props')
+                  | {{ col.label }}
+            template(v-slot:body='props')
+              q-tr(:props='props')
+                q-td(auto-width='')
+                  q-btn(size='sm' color='red' dense='' @click='props.expand = !props.expand' :icon="'remove'")
+
+                q-td(key='ngram' :props='props')
+                  | {{ props.row.ngram }}
+                  q-popup-edit(v-model='props.row.ngram' title='Редактировать ключевое слово' buttons='')
+                    q-input(type='text' v-model='props.row.ngram' dense='' autofocus='')
+
+                q-td(key='score' :props='props')
+                  | {{ props.row.score }}
+                  q-popup-edit(v-model='props.row.score' title='Редактировать значение важности' buttons='')
+                    q-input(type='number' v-model='props.row.score' dense='' autofocus='')
+
+        q-step(:name='4' title='Анализ актуальности' icon='assignment' style='min-height: 200px;')
+          q-table(
+            title='Класс-актуальность'
+            :data='classes'
+            :separator='separator'
+            virtual-scroll
+            :columns='classColumns'
+            :loading="loading"
+            pagination.sync="pagination"
+            :rows-per-page-options="[0]"
+            row-key='ngram')
+
+        q-step(:name='5' title='Рекомендации' icon='add_comment' style='min-height: 200px;')
+          | Try out different ad text to see what brings in the most customers, and learn how to
+          | enhance your ads using features like ad extensions. If you run into any problems with
+          | your ads, find out how to tell if they&apos;re running and how to resolve approval issues.
+
+        template(v-slot:navigation='')
+          q-stepper-navigation
+            q-btn(@click='$refs.stepper.next(), nextHandler()' color='primary' :label="step === 4 ? 'Получить рекомендации' : 'Следующий шаг'")
+            q-btn.q-ml-sm(v-if='step > 1' flat='' color='primary' @click='$refs.stepper.previous()' label='Назад')
+        template(v-slot:message='')
+          q-banner.bg-purple-8.text-white.q-px-lg(v-if='step === 1')
+            | Загрузите публикацию
+          q-banner.bg-orange-8.text-white.q-px-lg(v-else-if='step === 2')
+            | Определение параметров YAKE
+          q-banner.bg-cyan-8.text-white.q-px-lg(v-else-if='step === 3')
+            | Определение ключевых слов
+          q-banner.bg-green-8.text-white.q-px-lg(v-else-if='step === 4')
+            | Анализ актуальности
+          q-banner.bg-blue-8.text-white.q-px-lg(v-else='')
+            | Рекомендации
 </template>
 
 <script lang="ts">
-import { Vue, Component, Prop } from 'vue-property-decorator'
-import { Todo, Meta } from './models'
+import { Component, Mixins, Watch } from 'vue-property-decorator'
+import RequestService from 'src/services/implementation/RequestService'
+import ArticleFile from 'src/models/ArticleFile/ArticleFile'
+import AnalyseResponse from 'src/models/AnalyseResponse'
+import { Class } from 'src/models/Class'
 
 @Component
-export default class ClassComponent extends Vue {
-  @Prop({ type: String, required: true }) readonly title!: string;
-  @Prop({ type: Array, default: () => [] }) readonly todos!: Todo[];
-  @Prop({ type: Object, required: true }) readonly meta!: Meta;
-  @Prop(Boolean) readonly active!: boolean;
+export default class ClassComponent extends Mixins(RequestService) {
+  private file: File | null = null
+  private separator = 'cell'
+  private pagination = { rowsPerPage: 0 }
+  private step = 1
 
-  clickCount = 0;
-
-  increment () {
-    this.clickCount += 1
+  private articleFile: ArticleFile = {
+    file: null,
+    meta: {
+      language: 'ru',
+      maxNgramSize: 3,
+      deduplicationThresold: 1,
+      deduplicationAlgo: 'leve',
+      windowSize: 1,
+      numberOfKeywords: 10,
+      text: ''
+    }
   }
 
-  get todoCount () {
-    return this.todos.length
+  private loading = false;
+
+  private addRow (): void {
+    this.loading = true
+    const index = this.data.length + 1,
+      row = this.original
+    const addRow = { ...row }
+    this.data = [...this.data.slice(0, index), addRow, ...this.data.slice(index)] as AnalyseResponse[]
+    this.loading = false
   }
+
+  private async nextHandler (): Promise<void> {
+    this.loading = true
+    switch (this.step) {
+      case 3:
+        this.articleFile.file = this.file
+        this.data = await this.sendAndAnalyse(this.articleFile)
+        break
+      case 4:
+        this.classes = await this.actualityAnalyseRequest(this.data)
+        break
+    }
+    this.loading = false
+  }
+
+  @Watch('data')
+  private dataWatcher (): void {
+    console.log(this.data)
+  }
+
+  private columns = [{
+    name: 'ngram',
+    required: true,
+    label: 'Ключевое слово',
+    align: 'center'
+  },
+  { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
+
+  original: AnalyseResponse[] = [{
+    ngram: 'Поле для заполнения',
+    score: 0.0
+  }]
+
+  data: AnalyseResponse[] = [{
+    ngram: '',
+    score: 0
+  }]
+
+  private classColumns = [{
+    name: 'keywordText',
+    required: true,
+    label: 'Ключевое слово',
+    align: 'center'
+  },
+  { name: 'className', label: 'Класс', field: 'Класс', align: 'center', style: 'width: 10px' },
+  { name: 'classWeight', label: 'Вес', field: 'Вес', align: 'center', style: 'width: 10px' }]
+
+  classes: Class[] = [{
+    classId: 0,
+    keywordId: 0,
+    classWeight: 0,
+    className: '',
+    keywordText: ''
+  }]
 }
 </script>
