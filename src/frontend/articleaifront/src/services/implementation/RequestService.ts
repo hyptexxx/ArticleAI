@@ -5,9 +5,29 @@ import ArticleFile from '../../models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '../../models/ArticleFile/ArticleFileMeta'
 import { FullArticle } from '../../models/FullArticle'
 import { Class } from '../../models/Class'
+import { ClassActuality } from 'src/models/ClassActuality'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
+  async getActualityRequest (classes: Class[]): Promise<ClassActuality[]> {
+    const formData: FormData = new FormData()
+    formData.append('classes', JSON.stringify(classes))
+    const response = await this.$axios.post<ClassActuality[]>(
+      '/api/actuality/analyze', formData
+    )
+    return response.data
+  }
+
+  async classesAnalyseRequest (analyseResponse: AnalyseResponse[], articleId: number): Promise<Class[]> {
+    const formData: FormData = new FormData()
+    formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('articleId', articleId.toString())
+    const result = await this.$axios.post<Class[]>('/api/classes/analyse', formData)
+    if (!result.data) {
+    }
+    return result.data
+  }
+
   async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse[]> {
     const formData: FormData = new FormData()
     if (articleFile.file) {
@@ -38,18 +58,19 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile): Promise<void> {
+  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): Promise<number | null> {
     const formData: FormData = new FormData()
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('classes', JSON.stringify(classes))
     this.createFormDataForArticleFile(articleFile, formData)
     if (articleFile.file) {
       formData.append('file', articleFile.file)
     }
-    const result = await this.$axios.post<AnalyseResponse[]>('/api/yake/saveResultEntity', formData)
+    const result = await this.$axios.post<number>('/api/yake/saveResultEntity', formData)
     if (result.status === 200) {
-      console.log('notify')
+      return result.data
     } else {
-      console.log('notify')
+      return null
     }
   }
 

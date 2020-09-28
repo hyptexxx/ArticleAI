@@ -71,6 +71,7 @@ public class RESTFileController {
             }
         } catch (FileAlreadyExistsException e) {
             logger.info(e.getMessage() + "\t" + fileService.getFile().getAbsolutePath());
+            articleText = poiService.getArticleYakeText(fileService.getFile(), articleYake);
             if (requestService.sendRequest(articleText).isEmpty()) {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(requestService.sendRequest(null));
             } else {

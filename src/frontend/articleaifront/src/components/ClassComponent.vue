@@ -23,7 +23,7 @@
 
         q-step(:name='3' title='Определение ключевых слов' icon='create_new_folder' :done='step > 2' style='min-height: 200px;')
           q-btn(color='green' :disable='loading' label='Добавить ключевое слово' @click='addRow')
-          q-btn(color='green' :disable='loading' label='Сохранить результат' @click='addRow')
+          q-btn(color='green' :disable='loading' label='Сохранить результат' @click='saveResult')
           q-item.q-item__label--header
           q-table(
               title='Ключевые слова'
@@ -44,7 +44,7 @@
             template(v-slot:body='props')
               q-tr(:props='props')
                 q-td(auto-width='')
-                  q-btn(size='sm' color='red' dense='' @click='props.expand = !props.expand' :icon="'remove'")
+                  q-btn(size='sm' color='red' dense='' @click='removeRow' class='remove-row-btn' :icon="'remove'")
 
                 q-td(key='ngram' :props='props')
                   | {{ props.row.ngram }}
@@ -66,16 +66,49 @@
             :loading="loading"
             pagination.sync="pagination"
             :rows-per-page-options="[0]"
-            row-key='ngram')
+            row-key='classId')
 
         q-step(:name='5' title='Рекомендации' icon='add_comment' style='min-height: 200px;')
-          | Try out different ad text to see what brings in the most customers, and learn how to
-          | enhance your ads using features like ad extensions. If you run into any problems with
-          | your ads, find out how to tell if they&apos;re running and how to resolve approval issues.
+          .q-pa-md.row.items-start.q-gutter-md
+            q-card.my-card.bg-indigo-7.text-white
+              q-card-section
+                .text-h6 Общие рекомендации по увеличению актуальности
+                .text-subtitle2 Предложения для правок в тексте
+              q-card-section
+                q-chip(square='' text-color='white' class='bg-indigo-5' icon-right='edit')
+                  | Внесите предложенные правки в ключевые слова
+              q-separator(dark='')
+              q-card-actions
+                q-btn(flat='') Принять
+                q-btn(flat='') Отклонить
+
+            q-card.my-card.bg-indigo-7.text-white
+              q-card-section
+                .text-h6 Рекомендации по редактированию ключевых слов
+                .text-subtitle2 Ключевые слова
+              q-card-section
+                q-chip(square='' text-color='white' color='green' icon-right='add')
+                  | Пример ключевого слова 1
+                q-chip(square='' text-color='white' color='green' icon-right='add')
+                  | Пример ключевого слова 2
+                q-chip(square='' text-color='white' color='red' icon-right='remove')
+                  | Пример ключевого слова 3
+              q-separator(dark='')
+              q-card-actions
+                q-btn(flat='') Принять
+                q-btn(flat='') Отклонить
+
+            q-card.my-card.bg-indigo-7.text-white
+              q-card-section
+                .text-h6 Общая статистика
+                .text-subtitle2 Результаты анализа
+              q-card-section
+                q-chip(square='' color='green' text-color='white' icon-right='star')
+                  | Актуальность составляет 90%
 
         template(v-slot:navigation='')
           q-stepper-navigation
-            q-btn(@click='$refs.stepper.next(), nextHandler()' color='primary' :label="step === 4 ? 'Получить рекомендации' : 'Следующий шаг'")
+            q-btn(@click='$refs.stepper.next(), nextHandler()' color='primary' :label="step === 4 ? 'Получить рекомендации' : 'Следующий шаг'" v-if="step !== 5")
             q-btn.q-ml-sm(v-if='step > 1' flat='' color='primary' @click='$refs.stepper.previous()' label='Назад')
         template(v-slot:message='')
           q-banner.bg-purple-8.text-white.q-px-lg(v-if='step === 1')
@@ -91,7 +124,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins, Watch } from 'vue-property-decorator'
+import { Component, Mixins } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse from 'src/models/AnalyseResponse'
@@ -103,6 +136,7 @@ export default class ClassComponent extends Mixins(RequestService) {
   private separator = 'cell'
   private pagination = { rowsPerPage: 0 }
   private step = 1
+  private articleId: number | null = null
 
   private articleFile: ArticleFile = {
     file: null,
@@ -114,6 +148,14 @@ export default class ClassComponent extends Mixins(RequestService) {
       windowSize: 1,
       numberOfKeywords: 10,
       text: ''
+    }
+  }
+
+  private removeRow (click: MouseEvent): void {
+    for (let i = 0; i < document.getElementsByClassName('remove-row-btn').length; i++) {
+      if (document.getElementsByClassName('remove-row-btn')[i] === click.currentTarget) {
+        this.data.splice(i, 1)
+      }
     }
   }
 
@@ -136,15 +178,21 @@ export default class ClassComponent extends Mixins(RequestService) {
         this.data = await this.sendAndAnalyse(this.articleFile)
         break
       case 4:
-        this.classes = await this.actualityAnalyseRequest(this.data)
+        if (this.articleId) {
+          this.classes = await this.classesAnalyseRequest(this.data, this.articleId)
+        }
         break
     }
     this.loading = false
   }
 
-  @Watch('data')
-  private dataWatcher (): void {
-    console.log(this.data)
+  private async saveResult (): Promise<void> {
+    if (this.data && this.articleFile) {
+      const articleId = await this.saveResultRequest(this.data, this.articleFile, this.classes)
+      if (articleId) {
+        this.articleId = articleId
+      }
+    }
   }
 
   private columns = [{
@@ -165,14 +213,10 @@ export default class ClassComponent extends Mixins(RequestService) {
     score: 0
   }]
 
-  private classColumns = [{
-    name: 'keywordText',
-    required: true,
-    label: 'Ключевое слово',
-    align: 'center'
-  },
-  { name: 'className', label: 'Класс', field: 'Класс', align: 'center', style: 'width: 10px' },
-  { name: 'classWeight', label: 'Вес', field: 'Вес', align: 'center', style: 'width: 10px' }]
+  private classColumns = [
+    { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },
+    { name: 'classWeight', label: 'Вес класса', field: 'classWeight', align: 'center', style: 'width: 10px' },
+    { name: 'keywordText', label: 'Ключевое слово', field: 'keywordText', align: 'center', style: 'width: 10px' }]
 
   classes: Class[] = [{
     classId: 0,

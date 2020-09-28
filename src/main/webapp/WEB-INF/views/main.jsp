@@ -18,7 +18,7 @@
     <link href=/css/app.465dc8e7.css rel=stylesheet>
 <body>
 <div id=q-app></div>
-<script src="/js/vendor.b24622c3.js"></script>
-<script src="/js/app.fd284a55.js"></script>
+<script src="/js/vendor.daac22f2.js"></script>
+<script src="/js/app.72c29574.js"></script>
 </body>
 </html>
