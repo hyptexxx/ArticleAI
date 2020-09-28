@@ -6,13 +6,13 @@ public class ArticleYake {
     private float max_ngram_size;
     private float deduplication_thresold;
     private float windowSize;
-    private float number_of_keywords;
+    private int number_of_keywords;
     private String deduplication_algo;
     private String language;
     private String text;
 
 
-    public ArticleYake(String language, float max_ngram_size, float deduplication_thresold, String deduplication_algo, float windowSize, float number_of_keywords, String text) {
+    public ArticleYake(String language, float max_ngram_size, float deduplication_thresold, String deduplication_algo, float windowSize, int number_of_keywords, String text) {
         this.language = language;
         this.max_ngram_size = max_ngram_size;
         this.deduplication_thresold = deduplication_thresold;
@@ -67,11 +67,11 @@ public class ArticleYake {
         this.windowSize = windowSize;
     }
 
-    public float getNumber_of_keywords() {
+    public int getNumber_of_keywords() {
         return number_of_keywords;
     }
 
-    public void setNumber_of_keywords(float number_of_keywords) {
+    public void setNumber_of_keywords(int number_of_keywords) {
         this.number_of_keywords = number_of_keywords;
     }
 

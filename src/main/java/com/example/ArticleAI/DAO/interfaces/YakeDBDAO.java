@@ -33,10 +33,24 @@ public class YakeDBDAO implements IYakeDBDAO {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
                         .prepareStatement(
-                                "INSERT INTO article(id) VALUES (?)",
+                                "INSERT INTO article(id," +
+                                        " language," +
+                                        " max_ngram_size," +
+                                        " deduplication_thresold," +
+                                        " deduplication_algo," +
+                                        " window_size," +
+                                        " number_of_keywords," +
+                                        " prepared_text) VALUES (?,?,?,?,?,?,?,?)",
                                 PreparedStatement.RETURN_GENERATED_KEYS
                         );
                 ps.setInt(1, 0);
+                ps.setString(2,  articleYake.getLanguage());
+                ps.setFloat(3, articleYake.getMax_ngram_size());
+                ps.setFloat(4, articleYake.getDeduplication_thresold());
+                ps.setString(5, articleYake.getDeduplication_algo());
+                ps.setFloat(6, articleYake.getWindowSize());
+                ps.setInt(7, articleYake.getNumber_of_keywords());
+                ps.setString(8, articleYake.getText());
                 return ps;
             }, keyHolder);
 
@@ -48,29 +62,13 @@ public class YakeDBDAO implements IYakeDBDAO {
             }
 
             for (Class currClass: classes) {
-                jdbcTemplate.update("insert into classes(id, keyword_id, class_weight, class_name) values (?,?,?,?,?)",
+                jdbcTemplate.update("insert into classes(id, keyword_id, class_weight, class_name) values (?,?,?,?)",
                         0,
                         0,
                         currClass.getClassWeight(),
                         currClass.getClassName()
                 );
             }
-
-            jdbcTemplate.update(
-                    "INSERT INTO" +
-                            " article_params " +
-                            "(article_id, language, max_ngram_size, deduplication_thresold, deduplication_algo, window_size, number_of_keywords, text) " +
-                            "VALUES " +
-                            "(?,?,?,?,?,?,?,?)",
-                    keyHolder.getKey(),
-                    articleYake.getLanguage(),
-                    articleYake.getMax_ngram_size(),
-                    articleYake.getDeduplication_thresold(),
-                    articleYake.getDeduplication_algo(),
-                    articleYake.getWindowSize(),
-                    articleYake.getNumber_of_keywords(),
-                    articleYake.getText()
-            );
         } catch (DataAccessException e) {
             System.out.println(e);
         }

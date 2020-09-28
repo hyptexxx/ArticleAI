@@ -14,7 +14,7 @@ public class ArticleYakeMapper implements org.springframework.jdbc.core.RowMappe
         articleYake.setDeduplication_thresold(rs.getFloat("deduplication_thresold"));
         articleYake.setLanguage(rs.getString("language"));
         articleYake.setMax_ngram_size(rs.getFloat("max_ngram_size"));
-        articleYake.setNumber_of_keywords(rs.getFloat("number_of_keywords"));
+        articleYake.setNumber_of_keywords(rs.getInt("number_of_keywords"));
         articleYake.setWindowSize(rs.getFloat("window_size"));
         return articleYake;
     }
