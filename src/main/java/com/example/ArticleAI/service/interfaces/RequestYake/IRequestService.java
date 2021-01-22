@@ -14,7 +14,7 @@ public interface IRequestService {
      * @return request result
      * @throws IOException
      */
-    String sendRequest(ArticleYake articleYake) throws IOException;
+    String sendRequest(ArticleYake articleYake);
 
 
     /**

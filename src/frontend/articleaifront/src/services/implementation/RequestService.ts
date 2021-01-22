@@ -30,8 +30,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
 
   async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse[]> {
     const formData: FormData = new FormData()
-    if (articleFile.file) {
-      formData.append('file', articleFile.file)
+    if (articleFile.files) {
+      articleFile.files.forEach((file) => {
+        formData.append('files', file)
+      })
     }
     const response = await this.$axios.post<AnalyseResponse[]>(
       '/api/files/analyze',
@@ -63,8 +65,10 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('analyseResponse', JSON.stringify(analyseResponse))
     formData.append('classes', JSON.stringify(classes))
     this.createFormDataForArticleFile(articleFile, formData)
-    if (articleFile.file) {
-      formData.append('file', articleFile.file)
+    if (articleFile.files) {
+      articleFile.files.forEach((files) => {
+        formData.append('files', files)
+      })
     }
     const result = await this.$axios.post<number>('/api/yake/saveResultEntity', formData)
     if (result.status === 200) {

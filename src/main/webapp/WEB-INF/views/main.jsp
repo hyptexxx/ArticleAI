@@ -1,5 +1,4 @@
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<!DOCTYPE html>
 <html>
 <head>
     <base href=/>
@@ -15,10 +14,11 @@
     <link rel=icon type=image/png sizes=16x16 href=icons/favicon-16x16.png>
     <link rel=icon type=image/ico href=favicon.ico>
     <link href=/css/vendor.dc20e560.css rel=stylesheet>
-    <link href=/css/app.465dc8e7.css rel=stylesheet>
+    <link href=/css/app.e63a86ed.css rel=stylesheet>
+</head>
 <body>
 <div id=q-app></div>
-<script src="/js/vendor.daac22f2.js"></script>
-<script src="/js/app.72c29574.js"></script>
+<script src=/js/vendor.3270e5cf.js></script>
+<script src=/js/app.67fc19c7.js></script>
 </body>
 </html>

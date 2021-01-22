@@ -30,6 +30,7 @@ public class POIService implements IPOIService {
      */
     @Override
     public ArticleYake getArticleYakeText(File article, ArticleYake yake) {
+        ArticleYake.ArticleYakeBuilder articleYakeBuilder = ArticleYake.builder();
         StringBuilder articleText = new StringBuilder();
         try {
             final FileInputStream fis = new FileInputStream(article.getAbsolutePath());
@@ -46,10 +47,17 @@ public class POIService implements IPOIService {
         }
         try {
             articleProcessService.setArticleText(articleText.toString());
-            yake.setText(articleProcessService.getArticleParsedText());
+            articleYakeBuilder
+                    .text(articleProcessService.getArticleParsedText())
+                    .deduplication_algo(yake.getDeduplication_algo())
+                    .deduplication_thresold(yake.getDeduplication_thresold())
+                    .max_ngram_size(yake.getMax_ngram_size())
+                    .number_of_keywords(yake.getNumber_of_keywords())
+                    .windowSize(yake.getWindowSize())
+                    .language(yake.getLanguage());
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        return yake;
+        return articleYakeBuilder.build();
     }
 }

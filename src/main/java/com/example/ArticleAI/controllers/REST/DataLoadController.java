@@ -20,7 +20,9 @@ public class DataLoadController {
 
     @PostMapping(value = "/api/yake/response")
     public ResponseEntity<Object> getSavedYakeResponse(@RequestParam("yakeId") Integer yakeId){
-        final FullArticle fullArticle = new FullArticle(yakeDBService.getSavedYakeResponse(yakeId), yakeDBService.getSavedAnalysedArticle(yakeId));
+        final FullArticle fullArticle = new FullArticle(yakeDBService.getSavedYakeResponse(yakeId),
+                yakeDBService.getSavedAnalysedArticle(yakeId));
+
         if (!fullArticle.getSavedYakeResponse().isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(fullArticle);
         } else {

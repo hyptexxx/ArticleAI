@@ -13,5 +13,5 @@ public interface IITextService {
      * @param yake yake meta params
      * @return Full yake article
      */
-    ArticleYake getYakeTextFromPDF(MultipartFile article, ArticleYake yake) throws IOException;
+    ArticleYake getYakeTextFromPDF(MultipartFile article, ArticleYake yake);
 }

@@ -5,6 +5,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.nio.file.FileAlreadyExistsException;
+import java.util.List;
 
 public interface IFileService {
     /**
@@ -17,7 +18,4 @@ public interface IFileService {
      * @return previously saved file
      */
     File getFile();
-
-    ArticleYake getTextFromFile (File article, ArticleYake yake);
-    ArticleYake getTextFromFile (MultipartFile article, ArticleYake yake);
 }

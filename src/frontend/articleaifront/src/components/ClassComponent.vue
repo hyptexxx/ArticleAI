@@ -4,7 +4,7 @@
       q-stepper(v-model='step' ref='stepper' color='primary' animated='')
 
         q-step(:name='1' title='Загрузите публикацию' icon='settings' :done='step > 1' style='min-height: 200px;')
-          q-file(filled='' bottom-slots='' v-model='file' label='Публикация' counter='' max-files='12')
+          q-file(filled='' bottom-slots='' multiple v-model='files' label='Публикация' counter='' max-files='1000')
             template(v-slot:before='')
               q-icon(name='folder_open')
             template(v-slot:hint='')
@@ -132,14 +132,14 @@ import { Class } from 'src/models/Class'
 
 @Component
 export default class ClassComponent extends Mixins(RequestService) {
-  private file: File | null = null
+  private files: File[] | null = null
   private separator = 'cell'
   private pagination = { rowsPerPage: 0 }
   private step = 1
   private articleId: number | null = null
 
   private articleFile: ArticleFile = {
-    file: null,
+    files: null,
     meta: {
       language: 'ru',
       maxNgramSize: 3,
@@ -174,7 +174,7 @@ export default class ClassComponent extends Mixins(RequestService) {
     this.loading = true
     switch (this.step) {
       case 3:
-        this.articleFile.file = this.file
+        this.articleFile.files = this.files
         this.data = await this.sendAndAnalyse(this.articleFile)
         break
       case 4:

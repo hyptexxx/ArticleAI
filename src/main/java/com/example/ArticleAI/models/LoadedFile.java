@@ -1,0 +1,19 @@
+package com.example.ArticleAI.models;
+
+import com.example.ArticleAI.configurations.AllowedContentTypes;
+import lombok.Builder;
+import lombok.Value;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
+
+@Builder
+@Value
+public class LoadedFile {
+    MultipartFile loadedFile;
+    File savedFile;
+    AllowedContentTypes type;
+    ArticleYake articleYake;
+    String articleText;
+    String yakeResponse;
+}

@@ -2,6 +2,7 @@ package com.example.ArticleAI.modules.actualityResolver.parser;
 
 import com.example.ArticleAI.modules.classesResolver.models.Class;
 import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
