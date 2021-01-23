@@ -14,7 +14,9 @@ import com.example.ArticleAI.service.interfaces.Classes.IClassesService;
 import com.example.ArticleAI.service.interfaces.IText.IITextService;
 import com.example.ArticleAI.service.interfaces.RequestYake.IRequestService;
 import com.example.ArticleAI.service.interfaces.YakeService.IYakeService;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -25,6 +27,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final Logger logger;
 
@@ -40,21 +43,6 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
     private final Map<LoadedFile, Boolean> mappedSupportedFiles = new HashMap<>();
     private final Map<String, String> errorsToClient = new HashMap<>();
-
-    public FileProcessorEndpointImpl(Logger logger, IFileService fileService, IPOIService poiService,
-                                     IRequestService requestService, IITextService iiTextService,
-                                     YakeDBService yakeDBService, IYakeService yakeService, IClassesService classesService,
-                                     FileProcessor fileProcessor) {
-        this.logger = logger;
-        this.fileService = fileService;
-        this.poiService = poiService;
-        this.requestService = requestService;
-        this.iiTextService = iiTextService;
-        this.yakeDBService = yakeDBService;
-        this.yakeService = yakeService;
-        this.classesService = classesService;
-        this.fileProcessor = fileProcessor;
-    }
 
 
     @Override
