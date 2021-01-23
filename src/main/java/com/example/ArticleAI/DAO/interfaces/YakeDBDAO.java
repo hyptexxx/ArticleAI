@@ -77,11 +77,13 @@ public class YakeDBDAO implements IYakeDBDAO {
 
     @Override
     public List<YakeResponse> getSavedYakeResponse(Integer yakeId) {
-        return jdbcTemplate.query("select * from article_scores_yake where article_id = ?", new YakeResponseMapper(), yakeId);
+        return jdbcTemplate.query("select * from article_scores_yake where article_id = ?",
+                new YakeResponseMapper(), yakeId);
     }
 
     @Override
     public ArticleYake getSavedAnalysedArticle(Integer yakeId) {
-        return jdbcTemplate.queryForObject("select * from article_params where article_id = ?", new ArticleYakeMapper(), yakeId);
+        return jdbcTemplate.queryForObject("select * from article_params where article_id = ?",
+                new ArticleYakeMapper(), yakeId);
     }
 }

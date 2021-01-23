@@ -1,9 +1,11 @@
 package com.example.ArticleAI.controllers;
 
 import com.example.ArticleAI.configurations.AllowedContentTypes;
-import com.example.ArticleAI.controllers.REST.FileProccesorEndpoint;
+import com.example.ArticleAI.controllers.REST.FileProcessorEndpoint;
 import com.example.ArticleAI.models.ArticleYake;
+import com.example.ArticleAI.models.FullArticle;
 import com.example.ArticleAI.models.LoadedFile;
+import com.example.ArticleAI.models.YakeResponse;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
@@ -23,7 +25,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Component
-public class FileProcessorEndpointImpl implements FileProccesorEndpoint {
+public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final Logger logger;
 
     private final IFileService fileService;
@@ -67,47 +69,49 @@ public class FileProcessorEndpointImpl implements FileProccesorEndpoint {
             if (!allowedFiles.isEmpty()) {
                 try {
                     savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
-                    if (savedFiles.isPresent()) {
-                        sendPoolRequests(getText(savedFiles, articleYake));
-                    }
-                    System.out.println(1);
+                    Map<LoadedFile, ArticleYake> mergedText = mapText(savedFiles, articleYake);
+                    Optional<Map<FullArticle, LoadedFile>> response = sendPoolRequests(mergedText);
+                    saveResultResponse(response);
                 } catch (FileAlreadyExistsException e) {
-                    return ResponseEntity
-                            .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                            .body(errorsToClient);
+                    return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorsToClient);
                 }
             }
 
-            return ResponseEntity
-                    .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                    .body(errorsToClient);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorsToClient);
         }
 
-        return ResponseEntity
-                .status(HttpStatus.UNPROCESSABLE_ENTITY)
-                .body(null);
-
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
     }
 
-//    private List<Integer> saveResultResponse(List<String> sendPoolRequests) {
-//        List<Integer> generatedKeys = new ArrayList<>();
-//
-//        Integer generated_key = yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake),
-//                yakeService.parseYakeResponseJSON(response),
-//                classesService.parseClasses(classes));
-//        if (generated_key >= 0) {
-//            logger.info("Yake params saved");
-//            return ResponseEntity.status(HttpStatus.OK).body(generated_key);
-//        } else {
-//            logger.info("Failed to save Yake params");
-//            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
-//        }
-//    }
+    private Optional<List<Integer>> saveResultResponse(Optional<Map<FullArticle, LoadedFile>> response) {
+        List<Integer> generatedKeys = new ArrayList<>();
+        if (response.isPresent()) {
+            response.get().forEach((fullArticle, loadedFile) -> {
+                generatedKeys.add(yakeDBService.saveAnalysedArticleToDB(loadedFile.getLoadedFile(),
+                        fullArticle.getSavedArticleYake(),
+                        fullArticle.getSavedYakeResponse(),
+                        classesService.parseClasses(null)));
+            });
 
-    private List<String> sendPoolRequests(List<ArticleYake> articlesYake) {
-        return articlesYake.stream()
-                .map(requestService::sendRequest)
-                .collect(Collectors.toList());
+            if (generatedKeys.isEmpty()) {
+                logger.info("Failed to save Yake params");
+                return Optional.empty();
+            } else {
+                logger.info("Yake params saved");
+                return Optional.of(generatedKeys);
+            }
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<Map<FullArticle, LoadedFile>> sendPoolRequests(Map<LoadedFile, ArticleYake> articlesYake) {
+        Map<FullArticle, LoadedFile> result = new HashMap<>();
+        articlesYake.forEach((loadedFile, articleYake) -> result.put(FullArticle.builder()
+                .savedArticleYake(articleYake)
+                .savedYakeResponse(yakeService.parseYakeResponseJSON(requestService.sendRequest(articleYake)))
+                .build(), loadedFile));
+        return Optional.of(result);
     }
 
     private void setSupportFiles(List<MultipartFile> files) {
@@ -144,20 +148,19 @@ public class FileProcessorEndpointImpl implements FileProccesorEndpoint {
                 .collect(Collectors.toMap(Map.Entry::getKey, multipartFileBooleanEntry -> true));
     }
 
-    private List<ArticleYake> getText(Optional<List<LoadedFile>> savedFiles, ArticleYake articleYake) {
-        List<ArticleYake> result = new ArrayList<>();
-
-        for (LoadedFile loadedFile : savedFiles.get()) {
-            switch (loadedFile.getType()) {
-                case PDF:
-                    ArticleYake qwee = iiTextService.getYakeTextFromPDF(loadedFile.getLoadedFile(), articleYake);
-                    result.add(qwee);
-                    break;
-                case DOC:
-                case DOCX:
-                    ArticleYake qwe = poiService.getArticleYakeText(loadedFile.getSavedFile(), articleYake);
-                    result.add(qwe);
-                    break;
+    private Map<LoadedFile, ArticleYake> mapText(Optional<List<LoadedFile>> savedFiles, ArticleYake articleYake) {
+        Map<LoadedFile, ArticleYake> result = new HashMap<>();
+        if (savedFiles.isPresent()) {
+            for (LoadedFile loadedFile : savedFiles.get()) {
+                switch (loadedFile.getType()) {
+                    case PDF:
+                        result.put(loadedFile, iiTextService.getYakeTextFromPDF(loadedFile.getLoadedFile(), articleYake));
+                        break;
+                    case DOC:
+                    case DOCX:
+                        result.put(loadedFile, poiService.getArticleYakeText(loadedFile.getSavedFile(), articleYake));
+                        break;
+                }
             }
         }
 

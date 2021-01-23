@@ -11,7 +11,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-public interface FileProccesorEndpoint {
+public interface FileProcessorEndpoint {
 
     @PostMapping(value = "/api/files/analyze")
     ResponseEntity<Object> processFiles(@RequestParam("file") List<MultipartFile> files, ArticleYake articleYake);

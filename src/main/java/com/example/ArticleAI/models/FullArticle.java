@@ -1,7 +1,10 @@
 package com.example.ArticleAI.models;
 
+import lombok.Builder;
+
 import java.util.List;
 
+@Builder
 public class FullArticle {
 
     private List<YakeResponse> savedYakeResponse;
