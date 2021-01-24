@@ -33,7 +33,5 @@ public interface IPOIArticleProcessService {
      */
     String getArticleParsedText() throws ParseException;
 
-    String removeEng() throws ParseException;
-
-    void setLowerCase();
+    void removeEng() throws ParseException;
 }
