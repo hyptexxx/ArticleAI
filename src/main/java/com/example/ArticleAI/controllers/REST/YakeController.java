@@ -68,9 +68,10 @@ public class YakeController {
                                                    ArticleYake articleYake,
                                                    @RequestParam("analyseResponse") String response,
                                                    @RequestParam("classes") String classes) throws IOException {
-        Integer generated_key = yakeDBService.saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake),
-                yakeService.parseYakeResponseJSON(response),
-                classesService.parseClasses(classes));
+        Integer generated_key = yakeDBService
+                .saveAnalysedArticleToDB(file, poiService.getArticleYakeText(fileService.getFile(), articleYake),
+                        yakeService.parseYakeResponseJSON(response),
+                        classesService.parseClasses(classes));
         if (generated_key >= 0) {
             logger.info("Yake params saved");
             return ResponseEntity.status(HttpStatus.OK).body(generated_key);

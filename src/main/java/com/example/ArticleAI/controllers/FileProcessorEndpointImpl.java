@@ -6,6 +6,9 @@ import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.FullArticle;
 import com.example.ArticleAI.models.LoadedFile;
 import com.example.ArticleAI.models.YakeResponse;
+import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
+import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
+import com.example.ArticleAI.modules.classesResolver.models.Class;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
 import com.example.ArticleAI.service.implementations.DBService.YakeDBService;
 import com.example.ArticleAI.service.interfaces.ApachePOI.IPOIService;
@@ -40,6 +43,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final IClassesService classesService;
 
     private final FileProcessor fileProcessor;
+    private final ClassesResolver classesResolver;
 
     private final Map<LoadedFile, Boolean> mappedSupportedFiles = new HashMap<>();
     private final Map<String, String> errorsToClient = new HashMap<>();
@@ -73,12 +77,26 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
     private Optional<List<Integer>> saveResultResponse(Optional<Map<FullArticle, LoadedFile>> response) {
         List<Integer> generatedKeys = new ArrayList<>();
+
         if (response.isPresent()) {
             response.get().forEach((fullArticle, loadedFile) -> {
+                List<Class> classes = null;
+                classesResolver.setKeyWords(fullArticle.getSavedYakeResponse().stream()
+                        .map(YakeResponse::getNgram)
+                        .collect(Collectors.toList()));
+                classesResolver.setArticleId(yakeDBService.saveAnalysedArticleToDB(loadedFile.getLoadedFile(),
+                        fullArticle.getSavedArticleYake(),
+                        fullArticle.getSavedYakeResponse(),
+                        new ArrayList<>()));
+                try {
+                    classes = classesResolver.resolve();
+                } catch (EmptyKeywordListException e) {
+                    System.out.println(1);
+                }
                 generatedKeys.add(yakeDBService.saveAnalysedArticleToDB(loadedFile.getLoadedFile(),
                         fullArticle.getSavedArticleYake(),
                         fullArticle.getSavedYakeResponse(),
-                        classesService.parseClasses(null)));
+                        classes));
             });
 
             if (generatedKeys.isEmpty()) {

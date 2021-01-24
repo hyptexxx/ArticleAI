@@ -137,6 +137,36 @@ export default class ClassComponent extends Mixins(RequestService) {
   private pagination = { rowsPerPage: 0 }
   private step = 1
   private articleId: number | null = null
+  private columns = [{
+    name: 'ngram',
+    required: true,
+    label: 'Ключевое слово',
+    align: 'center'
+  },
+  { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
+
+  original: AnalyseResponse[] = [{
+    ngram: 'Поле для заполнения',
+    score: 0.0
+  }]
+
+  data: AnalyseResponse[] = [{
+    ngram: '',
+    score: 0
+  }]
+
+  private classColumns = [
+    { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },
+    { name: 'classWeight', label: 'Вес класса', field: 'classWeight', align: 'center', style: 'width: 10px' },
+    { name: 'keywordText', label: 'Ключевое слово', field: 'keywordText', align: 'center', style: 'width: 10px' }]
+
+  classes: Class[] = [{
+    classId: 0,
+    keywordId: 0,
+    classWeight: 0,
+    className: '',
+    keywordText: ''
+  }]
 
   private articleFile: ArticleFile = {
     files: null,
@@ -194,36 +224,5 @@ export default class ClassComponent extends Mixins(RequestService) {
       }
     }
   }
-
-  private columns = [{
-    name: 'ngram',
-    required: true,
-    label: 'Ключевое слово',
-    align: 'center'
-  },
-  { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
-
-  original: AnalyseResponse[] = [{
-    ngram: 'Поле для заполнения',
-    score: 0.0
-  }]
-
-  data: AnalyseResponse[] = [{
-    ngram: '',
-    score: 0
-  }]
-
-  private classColumns = [
-    { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },
-    { name: 'classWeight', label: 'Вес класса', field: 'classWeight', align: 'center', style: 'width: 10px' },
-    { name: 'keywordText', label: 'Ключевое слово', field: 'keywordText', align: 'center', style: 'width: 10px' }]
-
-  classes: Class[] = [{
-    classId: 0,
-    keywordId: 0,
-    classWeight: 0,
-    className: '',
-    keywordText: ''
-  }]
 }
 </script>

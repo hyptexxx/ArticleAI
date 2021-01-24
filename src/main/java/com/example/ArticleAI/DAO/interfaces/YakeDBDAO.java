@@ -15,6 +15,7 @@ import org.springframework.stereotype.Repository;
 import java.math.BigInteger;
 import java.sql.PreparedStatement;
 import java.util.List;
+import java.util.Objects;
 
 @Repository
 public class YakeDBDAO implements IYakeDBDAO {
@@ -72,7 +73,7 @@ public class YakeDBDAO implements IYakeDBDAO {
         } catch (DataAccessException e) {
             System.out.println(e);
         }
-        return ((BigInteger) keyHolder.getKey()).intValue();
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     @Override
