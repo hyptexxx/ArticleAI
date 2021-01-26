@@ -26,7 +26,7 @@ public class NlpRequestService {
         final RequestBody body = RequestBody
                 .create(new Gson().toJson(actualityPairs), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("10.10.1.30:8081/analyse")
+                .url("http://10.10.1.30:8081/analyse")
                 .post(body)
                 .build();
         try {
@@ -53,6 +53,7 @@ public class NlpRequestService {
                     break;
 
                 case 200:
+                    log.error("nlp response 200");
                     responseBody = response.body().string();
                     break;
 
