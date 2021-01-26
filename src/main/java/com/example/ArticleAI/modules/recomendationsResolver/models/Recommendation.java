@@ -1,24 +1,13 @@
 package com.example.ArticleAI.modules.recomendationsResolver.models;
 
-public class Recommendation {
+import lombok.*;
 
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+public class Recommendation {
     private String recommendationText;
 
-
-    public Recommendation(String recommendationText) {
-        this.recommendationText = recommendationText;
-    }
-
-    public Recommendation() {
-
-    }
-
-
-    public String getRecommendationText() {
-        return recommendationText;
-    }
-
-    public void setRecommendationText(String recommendationText) {
-        this.recommendationText = recommendationText;
-    }
 }
