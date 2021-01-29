@@ -17,7 +17,7 @@ class NlpRequestServiceTest {
 	@Test
 	public void setRecommendations(){
 		actualityList.add(Actuality.builder()
-				.actuality(new Random().nextInt() % 10)
+				.actuality((long) (new Random().nextInt() % 10))
 				.classId(new Random().nextInt() % 10)
 				.build());
 	}

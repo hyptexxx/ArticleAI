@@ -9,5 +9,5 @@ import lombok.*;
 @Setter
 public class Actuality {
     private int classId;
-    private Integer actuality;
+    private Long actuality;
 }

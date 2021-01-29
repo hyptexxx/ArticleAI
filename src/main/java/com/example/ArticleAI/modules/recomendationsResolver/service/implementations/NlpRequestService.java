@@ -6,12 +6,14 @@ import com.example.ArticleAI.modules.recomendationsResolver.parser.Recommendatio
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 @Slf4j
+@Service
 public class NlpRequestService {
     public List<Recommendation> getRecommendations(List<Actuality> actualityPairs) {
         OkHttpClient client;
@@ -53,7 +55,7 @@ public class NlpRequestService {
                     break;
 
                 case 200:
-                    log.error("nlp response 200");
+                    log.info("nlp response 200");
                     responseBody = response.body().string();
                     break;
 

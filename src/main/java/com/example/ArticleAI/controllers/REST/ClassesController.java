@@ -1,5 +1,7 @@
 package com.example.ArticleAI.controllers.REST;
 
+import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
+import com.example.ArticleAI.modules.actualityResolver.service.interfaces.Actuality.IActualityService;
 import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
 import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
 import com.example.ArticleAI.modules.classesResolver.models.Class;
@@ -22,7 +24,8 @@ public class ClassesController {
 
     private final IYakeService yakeService;
     private final ClassesResolver classesResolver;
-
+    private final
+    IActualityService actualityService;
 
     @PostMapping(value = "/api/classes/analyse")
     public ResponseEntity<Object> actualityAnalyse(@RequestParam("analyseResponse") String response,

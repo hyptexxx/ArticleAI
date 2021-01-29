@@ -18,6 +18,7 @@ import com.example.ArticleAI.service.interfaces.IText.IITextService;
 import com.example.ArticleAI.service.interfaces.RequestYake.IRequestService;
 import com.example.ArticleAI.service.interfaces.YakeService.IYakeService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -25,11 +26,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+
 @Component
+@Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final Logger logger;
@@ -50,26 +54,31 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
 
     @Override
-    public ResponseEntity<Object> processFiles(List<MultipartFile> files, ArticleYake articleYake) {
+    public ResponseEntity<Object> processFiles(List<MultipartFile> files, ArticleYake articleYake) throws IOException {
         Optional<List<LoadedFile>> savedFiles;
         Map<LoadedFile, Boolean> allowedFiles;
 
         if (!files.isEmpty()) {
             setSupportFiles(files);
             allowedFiles = getAllowedFiles();
+            Optional<Map<FullArticle, LoadedFile>> response = null;
 
             if (!allowedFiles.isEmpty()) {
                 try {
                     savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
                     Map<LoadedFile, ArticleYake> mergedText = mapText(savedFiles, articleYake);
-                    Optional<Map<FullArticle, LoadedFile>> response = sendPoolRequests(mergedText);
+                    response = sendPoolRequests(mergedText);
                     saveResultResponse(response);
                 } catch (FileAlreadyExistsException e) {
                     return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorsToClient);
                 }
             }
 
-            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(errorsToClient);
+            return ResponseEntity.status(HttpStatus.OK).body(response.get()
+                    .keySet().stream()
+                    .findFirst()
+                    .get()
+                    .getSavedYakeResponse());
         }
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);

@@ -3,26 +3,23 @@ package com.example.ArticleAI.modules.actualityResolver.service.implementation.A
 import com.example.ArticleAI.modules.actualityResolver.DAO.interfaces.IActualityResolverDAO;
 import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
 import com.example.ArticleAI.modules.actualityResolver.parser.ClassParser;
+import com.example.ArticleAI.modules.actualityResolver.service.implementation.SearchAPIRequests.SearchAPIService;
 import com.example.ArticleAI.modules.actualityResolver.service.interfaces.Actuality.IActualityService;
-import com.example.ArticleAI.modules.actualityResolver.service.interfaces.SearchAPIService.ISearchAPIService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ActualityService implements IActualityService {
-
-    private final
-    ISearchAPIService searchAPIService;
 
     private final
     IActualityResolverDAO actualityResolverDAO;
 
-    public ActualityService(ISearchAPIService searchAPIService, IActualityResolverDAO actualityResolverDAO) {
-        this.searchAPIService = searchAPIService;
-        this.actualityResolverDAO = actualityResolverDAO;
-    }
+    private final SearchAPIService searchAPIService;
 
     @Override
     public List<Actuality> getActuality(String classes) {

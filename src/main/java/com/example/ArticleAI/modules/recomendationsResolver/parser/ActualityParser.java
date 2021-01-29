@@ -14,7 +14,7 @@ public class ActualityParser {
             result.add(
                     new Actuality(
                             jsonArray.getJSONObject(i).getInt("class"),
-                            jsonArray.getJSONObject(i).getInt("actuality")
+                            jsonArray.getJSONObject(i).getLong("actuality")
                     )
             );
         }

@@ -2,6 +2,8 @@ package com.example.ArticleAI.controllers.REST;
 
 import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
 import com.example.ArticleAI.modules.actualityResolver.service.interfaces.Actuality.IActualityService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -11,14 +13,11 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ActualityController {
 
     private final
     IActualityService actualityService;
-
-    public ActualityController(IActualityService actualityService) {
-        this.actualityService = actualityService;
-    }
 
 
     @PostMapping(value = "/api/actuality/analyse")
