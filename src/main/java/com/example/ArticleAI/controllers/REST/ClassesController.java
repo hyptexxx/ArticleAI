@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
@@ -46,8 +47,10 @@ public class ClassesController {
         }
 
         if (classes.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(null);
+            return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
         }
+
+        List<Actuality> actualities = actualityService.getActuality(classes);
 
         return ResponseEntity.status(HttpStatus.OK).body(classes);
     }

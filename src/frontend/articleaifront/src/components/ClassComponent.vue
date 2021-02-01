@@ -146,14 +146,12 @@ export default class ClassComponent extends Mixins(RequestService) {
   { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
 
   original: AnalyseResponse[] = [{
+    generatedArticleId
     ngram: 'Поле для заполнения',
     score: 0.0
   }]
 
-  data: AnalyseResponse[] = [{
-    ngram: '',
-    score: 0
-  }]
+  data!: AnalyseResponse
 
   private classColumns = [
     { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },

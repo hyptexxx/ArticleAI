@@ -4,49 +4,38 @@ import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordList
 import com.example.ArticleAI.modules.classesResolver.models.Class;
 import com.example.ArticleAI.modules.classesResolver.models.Keyword;
 import com.example.ArticleAI.modules.classesResolver.service.interfaces.IClassesResolverService;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import org.apache.commons.collections4.ListUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
+@Setter
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class ClassesResolver {
     private List<String> keyWords;
     private Integer articleId;
 
-    private final
-    IClassesResolverService classesResolverService;
-
-    public ClassesResolver(IClassesResolverService classesResolverService) {
-        this.classesResolverService = classesResolverService;
-    }
-
-    public void setKeyWords(List<String> keyWords) {
-        this.keyWords = keyWords;
-    }
-
-
-    public void setArticleId(Integer articleId) {
-        this.articleId = articleId;
-    }
+    private final IClassesResolverService classesResolverService;
 
     public List<Class> resolve() throws EmptyKeywordListException {
         List<Keyword> existingKeywordsList = classesResolverService.getExistingKeywordsList();
         List<Class> existingClassList;
         List<Class> resultClassList = new ArrayList<>();
-        if (!existingKeywordsList.isEmpty()) {
-            for (String keyword : this.keyWords) {
-                if (classesResolverService.isKeywordExistsInExistingClassesList(keyword, existingKeywordsList)) {
-                    existingClassList = classesResolverService.getExistingClassList(keyword);
-                    resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
-                } else {
-                    classesResolverService.saveNewKeyword(keyword, articleId);
-                }
+
+        for (String keyword : this.keyWords) {
+            if (classesResolverService.isKeywordExistsInExistingClassesList(keyword, existingKeywordsList)) {
+                existingClassList = classesResolverService.getExistingClassList(keyword);
+                resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
+            } else {
+                classesResolverService.saveNewKeyword(keyword, articleId);
             }
-        } else {
-            throw new EmptyKeywordListException("keyword list from DB is empty");
         }
+
         return resultClassList;
     }
 

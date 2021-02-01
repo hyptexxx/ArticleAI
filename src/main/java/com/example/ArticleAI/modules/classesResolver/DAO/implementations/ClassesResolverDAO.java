@@ -38,7 +38,7 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
 
     @Override
     public List<Keyword> getExistingKeywordsList() {
-        return jdbcTemplate.query("select * from keywords", new KeywordMapper());
+        return jdbcTemplate.query("select id, keyword_text from keywords", new KeywordMapper());
     }
 
     @Override
@@ -58,10 +58,8 @@ public class ClassesResolverDAO implements IClassesResolverDAO {
         } catch (DataAccessException e) {
             return false;
         }
-        for (String existingClass : getAllExistingClasses()) {
             jdbcTemplate.update("insert into classes(keyword_id, class_weight, class_name) values (?,?,?)",
-                    keyHolder.getKey(), 0, existingClass);
-        }
+                    keyHolder.getKey(), 0, "existingClass");
         return true;
     }
 

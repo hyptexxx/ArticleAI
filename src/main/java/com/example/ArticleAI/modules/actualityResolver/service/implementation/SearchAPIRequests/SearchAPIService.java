@@ -16,11 +16,11 @@ public class SearchAPIService {
     @SneakyThrows
     public Long getSearchCount(Class className) {
         long searchCount = 0L;
-        if (StringUtils.isNotBlank(className.getClassName())) {
-            Document doc = Jsoup.connect("https://www.google.com/search?q=" + className.getClassName()).get();
+        if (StringUtils.isNotBlank(className.getKeywordText())) {
+            Document doc = Jsoup.connect("https://www.google.com/search?q=" + className.getKeywordText()).get();
 
             String searchResult = doc.select("#result-stats").first().ownText();
-            if (StringUtils.isBlank(searchResult)) {
+            if (!StringUtils.isBlank(searchResult)) {
                 searchCount = Long.parseLong(Stream.of(searchResult.split(""))
                         .filter(str -> Character.isDigit(searchResult.charAt(searchResult.indexOf(str))))
                         .map(StringBuilder::new)

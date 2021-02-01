@@ -7,8 +7,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+@Deprecated
 public interface IYakeDBDAO {
-    Integer saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList, List<Class> classes);
+    Integer saveAnalysedArticleToDB(ArticleYake articleYake, List<YakeResponse> yakeResponseList);
 
     List<YakeResponse> getSavedYakeResponse(Integer yakeId);
 

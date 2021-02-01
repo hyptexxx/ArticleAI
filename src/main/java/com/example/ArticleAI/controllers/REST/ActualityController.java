@@ -1,6 +1,7 @@
 package com.example.ArticleAI.controllers.REST;
 
 import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
+import com.example.ArticleAI.modules.actualityResolver.parser.ClassParser;
 import com.example.ArticleAI.modules.actualityResolver.service.interfaces.Actuality.IActualityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,7 +23,7 @@ public class ActualityController {
 
     @PostMapping(value = "/api/actuality/analyse")
     public ResponseEntity<Object> actualityAnalyse(@RequestParam("classes") String classes) {
-        List<Actuality> actualityList =  actualityService.getActuality(classes);
+        List<Actuality> actualityList =  actualityService.getActuality(new ClassParser().getClassesFromJSON(classes));
         if (!actualityList.isEmpty()) {
             return ResponseEntity.status(HttpStatus.OK).body(actualityList);
         } else {

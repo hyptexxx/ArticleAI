@@ -16,13 +16,7 @@ public class ClassesResolverService extends ClassesResolverDBService implements 
 
     @Override
     public boolean isKeywordExistsInExistingClassesList(String keyword, List<Keyword> existingKeywordsList) {
-        boolean result = false;
-        for (Keyword existingKeyword : existingKeywordsList) {
-            if (existingKeyword.getKeywordText().equals(keyword)) {
-                result = true;
-                break;
-            }
-        }
-        return result;
+        return existingKeywordsList.stream()
+                .anyMatch(keywordInSearch -> keywordInSearch.getKeywordText().equals(keyword));
     }
 }

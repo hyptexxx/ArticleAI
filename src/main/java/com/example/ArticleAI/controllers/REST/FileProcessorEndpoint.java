@@ -15,5 +15,6 @@ import java.util.List;
 public interface FileProcessorEndpoint {
 
     @PostMapping(value = "/api/files/analyze")
-    ResponseEntity<Object> processFiles(@RequestParam("file") List<MultipartFile> files, ArticleYake articleYake) throws IOException;
+    ResponseEntity<Object> processFiles(@RequestParam("file") List<MultipartFile> files, ArticleYake articleYake)
+            throws IOException;
 }
