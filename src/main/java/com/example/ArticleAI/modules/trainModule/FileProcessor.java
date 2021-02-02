@@ -1,6 +1,7 @@
 package com.example.ArticleAI.modules.trainModule;
 
 import com.example.ArticleAI.models.LoadedFile;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -11,6 +12,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+@Slf4j
 @Service
 public class FileProcessor {
     /**
@@ -40,7 +42,11 @@ public class FileProcessor {
         for (LoadedFile file : files) {
             savedFile = new File(dir.getAbsolutePath() + File.separator
                     + file.getLoadedFile().getOriginalFilename());
+            if (savedFile.delete()) {
+                log.info("file deleted {}", savedFile.getPath());
+            }
 
+            log.info("saving file {}", savedFile.getPath());
             if (!isFileExists(savedFile)) {
                 try {
                     stream = new BufferedOutputStream(new FileOutputStream(savedFile));

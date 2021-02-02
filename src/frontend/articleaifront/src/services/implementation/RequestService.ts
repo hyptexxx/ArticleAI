@@ -18,9 +18,9 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return response.data
   }
 
-  async classesAnalyseRequest (analyseResponse: AnalyseResponse[], articleId: number): Promise<Class[]> {
+  async classesAnalyseRequest (analyseResponse: AnalyseResponse, articleId: number): Promise<Class[]> {
     const formData: FormData = new FormData()
-    formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('analyseResponse', JSON.stringify(analyseResponse.yakeResponse))
     formData.append('articleId', articleId.toString())
     const result = await this.$axios.post<Class[]>('/api/classes/analyse', formData)
     if (!result.data) {
@@ -28,14 +28,14 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return result.data
   }
 
-  async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse[]> {
+  async sendAndAnalyse (articleFile: ArticleFile): Promise<AnalyseResponse> {
     const formData: FormData = new FormData()
     if (articleFile.files) {
       articleFile.files.forEach((file) => {
         formData.append('files', file)
       })
     }
-    const response = await this.$axios.post<AnalyseResponse[]>(
+    const response = await this.$axios.post<AnalyseResponse>(
       '/api/files/analyze',
       this.createFormDataForArticleFile(articleFile, formData)
     )
@@ -61,9 +61,9 @@ export default class RequestService extends Vue implements RequestServiceInterfa
   }
 
   //
-  async saveResultRequest (analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): Promise<number | null> {
+  async saveResultRequest (analyseResponse: AnalyseResponse, articleFile: ArticleFile, classes: Class[]): Promise<number | null> {
     const formData: FormData = new FormData()
-    formData.append('analyseResponse', JSON.stringify(analyseResponse))
+    formData.append('analyseResponse', JSON.stringify(analyseResponse.yakeResponse))
     formData.append('classes', JSON.stringify(classes))
     this.createFormDataForArticleFile(articleFile, formData)
     if (articleFile.files) {

@@ -23,18 +23,17 @@
 
         q-step(:name='3' title='Определение ключевых слов' icon='create_new_folder' :done='step > 2' style='min-height: 200px;')
           q-btn(color='green' :disable='loading' label='Добавить ключевое слово' @click='addRow')
-          q-btn(color='green' :disable='loading' label='Сохранить результат' @click='saveResult')
           q-item.q-item__label--header
           q-table(
-              title='Ключевые слова'
-              :data='data'
-              :separator='separator'
-              virtual-scroll
-              :columns='columns'
-              :loading="loading"
-              pagination.sync="pagination"
-              :rows-per-page-options="[0]"
-              row-key='ngram')
+            title='Ключевые слова'
+            :data='data.yakeResponse'
+            :separator='separator'
+            virtual-scroll
+            :columns='columns'
+            :loading="loading"
+            pagination.sync="pagination"
+            :rows-per-page-options="[0]"
+            row-key='ngram')
             template(v-slot:header='props')
               q-tr(:props='props')
                 q-th(auto-width='')
@@ -127,7 +126,7 @@
 import { Component, Mixins } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
-import AnalyseResponse from 'src/models/AnalyseResponse'
+import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
 import { Class } from 'src/models/Class'
 
 @Component
@@ -146,25 +145,27 @@ export default class ClassComponent extends Mixins(RequestService) {
   { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
 
   original: AnalyseResponse[] = [{
-    generatedArticleId
-    ngram: 'Поле для заполнения',
-    score: 0.0
+    yakeResponse: [{
+      ngram: '',
+      score: 0
+    }],
+    generatedArticleId: 0
   }]
 
-  data!: AnalyseResponse
+  data: AnalyseResponse = {
+    yakeResponse: [{
+      ngram: '',
+      score: 0
+    }],
+    generatedArticleId: 0
+  }
 
   private classColumns = [
     { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },
-    { name: 'classWeight', label: 'Вес класса', field: 'classWeight', align: 'center', style: 'width: 10px' },
+    { name: 'actuality', label: 'Вес класса', field: 'actuality', align: 'center', style: 'width: 10px' },
     { name: 'keywordText', label: 'Ключевое слово', field: 'keywordText', align: 'center', style: 'width: 10px' }]
 
-  classes: Class[] = [{
-    classId: 0,
-    keywordId: 0,
-    classWeight: 0,
-    className: '',
-    keywordText: ''
-  }]
+  classes: Class[] = []
 
   private articleFile: ArticleFile = {
     files: null,
@@ -182,7 +183,7 @@ export default class ClassComponent extends Mixins(RequestService) {
   private removeRow (click: MouseEvent): void {
     for (let i = 0; i < document.getElementsByClassName('remove-row-btn').length; i++) {
       if (document.getElementsByClassName('remove-row-btn')[i] === click.currentTarget) {
-        this.data.splice(i, 1)
+        this.data.yakeResponse.splice(i, 1)
       }
     }
   }
@@ -191,10 +192,10 @@ export default class ClassComponent extends Mixins(RequestService) {
 
   private addRow (): void {
     this.loading = true
-    const index = this.data.length + 1,
+    const index = this.data.yakeResponse.length + 1,
       row = this.original
     const addRow = { ...row }
-    this.data = [...this.data.slice(0, index), addRow, ...this.data.slice(index)] as AnalyseResponse[]
+    this.data.yakeResponse = [...this.data.yakeResponse.slice(0, index), addRow, ...this.data.yakeResponse.slice(index)] as YakeResponse[]
     this.loading = false
   }
 
@@ -203,11 +204,12 @@ export default class ClassComponent extends Mixins(RequestService) {
     switch (this.step) {
       case 3:
         this.articleFile.files = this.files
+        console.log(this.articleFile.files)
         this.data = await this.sendAndAnalyse(this.articleFile)
         break
       case 4:
-        if (this.articleId) {
-          this.classes = await this.classesAnalyseRequest(this.data, this.articleId)
+        if (this.data.generatedArticleId) {
+          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
         }
         break
     }

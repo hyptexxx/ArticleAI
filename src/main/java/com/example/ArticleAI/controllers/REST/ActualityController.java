@@ -21,13 +21,13 @@ public class ActualityController {
     IActualityService actualityService;
 
 
-    @PostMapping(value = "/api/actuality/analyse")
-    public ResponseEntity<Object> actualityAnalyse(@RequestParam("classes") String classes) {
-        List<Actuality> actualityList =  actualityService.getActuality(new ClassParser().getClassesFromJSON(classes));
-        if (!actualityList.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.OK).body(actualityList);
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-        }
-    }
+//    @PostMapping(value = "/api/actuality/analyse")
+//    public ResponseEntity<Object> actualityAnalyse(@RequestParam("classes") String classes) {
+//        List<Actuality> actualityList =  actualityService.getActuality(new ClassParser().getClassesFromJSON(classes));
+//        if (!actualityList.isEmpty()) {
+//            return ResponseEntity.status(HttpStatus.OK).body(actualityList);
+//        } else {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+//        }
+//    }
 }

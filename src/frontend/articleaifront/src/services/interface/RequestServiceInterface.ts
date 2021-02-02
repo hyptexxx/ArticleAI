@@ -6,9 +6,9 @@ import { Class } from 'src/models/Class'
 import { ClassActuality } from 'src/models/ClassActuality'
 
 export default interface RequestServiceInterface{
-  sendAndAnalyse(articleFile: ArticleFile): Promise<AnalyseResponse[]>;
+  sendAndAnalyse(articleFile: ArticleFile): Promise<AnalyseResponse>;
   sendTextAndAnalyse(articleFile: ArticleFileMeta): Promise<AnalyseResponse[]>;
-  saveResultRequest(analyseResponse: AnalyseResponse[], articleFile: ArticleFile, classes: Class[]): void;
+  saveResultRequest(analyseResponse: AnalyseResponse, articleFile: ArticleFile, classes: Class[]): void;
   loadSavedResults(yakeId: number): Promise<FullArticle>;
   getActualityRequest(classes: Class[]): Promise<ClassActuality[]>
 }

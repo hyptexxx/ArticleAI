@@ -5,6 +5,7 @@ import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,12 +19,16 @@ public class ActualityResolverDAO implements IActualityResolverDAO {
     }
 
     @Override
-    public void save(List<Actuality> actualityPair) {
+    public void save(List<Actuality> actualityPair) throws SQLIntegrityConstraintViolationException {
         List<Object[]> batch = new ArrayList<>();
         actualityPair.forEach(actuality -> batch.add(new Object[]{
                 actuality.getClassId(),
                 actuality.getActuality()
         }));
-        jdbcTemplate.batchUpdate("insert into class_actuality(id, actuality) VALUES (?,?)", batch);
+        try {
+            jdbcTemplate.batchUpdate("insert into class_actuality(id, actuality) VALUES (?,?)", batch);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
