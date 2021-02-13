@@ -10,7 +10,7 @@ public class YakeResponseMapper implements org.springframework.jdbc.core.RowMapp
     public YakeResponse mapRow(ResultSet rs, int rowNum) throws SQLException {
         YakeResponse yakeResponse = new YakeResponse();
         yakeResponse.setNgram(rs.getString("ngram"));
-        yakeResponse.setScore(rs.getInt("score"));
+        yakeResponse.setScore(rs.getFloat("score"));
         return yakeResponse;
     }
 }

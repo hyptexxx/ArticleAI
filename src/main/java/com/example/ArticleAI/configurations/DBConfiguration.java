@@ -20,7 +20,4 @@ public class DBConfiguration {
         dataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
         return dataSource;
     }
-
-
-
 }

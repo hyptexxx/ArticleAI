@@ -35,10 +35,12 @@ export default class RequestService extends Vue implements RequestServiceInterfa
         formData.append('files', file)
       })
     }
-    const response = await this.$axios.post<AnalyseResponse>(
-      '/api/files/analyze',
-      this.createFormDataForArticleFile(articleFile, formData)
-    )
+
+    const response = await this.$axios.post<AnalyseResponse>('/api/files/analyze', this.createFormDataForArticleFile(articleFile, formData), {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    })
     return response.data
   }
 
