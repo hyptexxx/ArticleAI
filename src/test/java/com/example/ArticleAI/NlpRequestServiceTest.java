@@ -24,7 +24,7 @@ class NlpRequestServiceTest {
 
 	@Test
 	void testNlpRequest() {
-		List<Recommendation> recommendations = new NlpRequestService().getRecommendations(actualityList);
+		List<Recommendation> recommendations = new NlpRequestService().getRecommendations(new ArrayList<>());
 		Assertions.assertNotNull(recommendations);
 	}
 }

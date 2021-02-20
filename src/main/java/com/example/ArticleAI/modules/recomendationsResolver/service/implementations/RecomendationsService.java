@@ -30,9 +30,8 @@ public class RecomendationsService implements IRecomendationsService {
         List<Actuality> actualityPairs = new ActualityParser().getActualityFromJSON(actuality).stream()
                 .filter(parsedActuality -> parsedActuality.getActuality() > MAX_VALUE)
                 .collect(Collectors.toList());
-
         recommendation = Recommendation.builder()
-                .recommendationText(nlpService.getRecommendations(actualityPairs).stream()
+                .recommendationText(nlpService.getRecommendations(new ArrayList<>()).stream()
                         .map(Recommendation::getRecommendationText)
                         .collect(Collectors.joining("\n")))
                 .build();

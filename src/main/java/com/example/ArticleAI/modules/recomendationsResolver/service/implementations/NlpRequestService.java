@@ -15,7 +15,7 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class NlpRequestService {
-    public List<Recommendation> getRecommendations(List<Actuality> actualityPairs) {
+    public List<Recommendation> getRecommendations(List<String> actualityPairs) {
         OkHttpClient client;
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
         builder.connectTimeout(60, TimeUnit.SECONDS);
@@ -28,7 +28,7 @@ public class NlpRequestService {
         final RequestBody body = RequestBody
                 .create(new Gson().toJson(actualityPairs), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("http://10.10.1.30:8081/analyse")
+                .url("http://localhost:8081/api/v1/analyse")
                 .post(body)
                 .build();
         try {

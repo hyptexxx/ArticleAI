@@ -111,6 +111,36 @@ public class YakeRepository {
         return true;
     }
 
+    public List<String> getAllNgram() {
+        return jdbcTemplate.queryForList("select ngram\n" +
+                "from article_scores_yake\n" +
+                "where article_id = -1 and\n" +
+                "      article_scores_yake.ngram not like '%гбоу%' and\n" +
+                "      article_scores_yake.ngram not like '%кафедр%' and\n" +
+                "      article_scores_yake.ngram not like '%доцент%' and\n" +
+                "      article_scores_yake.ngram not like '%профессор%' and\n" +
+                "      article_scores_yake.ngram not like '%государственн%' and\n" +
+                "      article_scores_yake.ngram not like '%общеобразовательн%' and\n" +
+                "      article_scores_yake.ngram not like '%орлова%' and\n" +
+                "      article_scores_yake.ngram not like '%наталья%' and\n" +
+                "      article_scores_yake.ngram not like '%бюджетн%' and\n" +
+                "      article_scores_yake.ngram not like '%учрежде%' and\n" +
+                "      article_scores_yake.ngram not like '%бюджетн%' and\n" +
+                "      article_scores_yake.ngram not like '%област%' and\n" +
+                "      article_scores_yake.ngram not like '%москов%' and\n" +
+                "      article_scores_yake.ngram not like '%москв%' and\n" +
+                "      article_scores_yake.ngram not like '%автор%' and\n" +
+                "      article_scores_yake.ngram not like '%высше%' and\n" +
+                "      article_scores_yake.ngram not like '%кандидат%' and\n" +
+                "      article_scores_yake.ngram not like '%университет%' and\n" +
+                "      article_scores_yake.ngram not like '%вера%' and\n" +
+                "      article_scores_yake.ngram not like '%ольга%' and\n" +
+                "      article_scores_yake.ngram not like '%владислав%' and\n" +
+                "      article_scores_yake.ngram not like '%статья%' and\n" +
+                "      article_scores_yake.ngram not like '%.%' and\n" +
+                "      article_scores_yake.ngram not like '%-%'", String.class);
+    }
+
     public List<YakeResponse> getSavedYakeResponse(Integer yakeId) {
         return jdbcTemplate.query("select * from article_scores_yake where article_id = ?",
                 new YakeResponseMapper(), yakeId);

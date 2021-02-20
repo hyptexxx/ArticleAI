@@ -27,4 +27,25 @@ public class KmeansOutputEndpoint {
 
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
     }
+
+
+    @GetMapping(value = "/api/v1/kmeans/keywords/full")
+    ResponseEntity<Object> getFullListOfKeywords() {
+        Optional<List<YakeResponse>> result = kmeansRepository.getAllKeywords();
+        if (result.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
+
+    @GetMapping(value = "/api/v1/kmeans/keywords/split")
+    ResponseEntity<Object> getSplitKeywords() {
+        Optional<List<YakeResponse>> result = kmeansRepository.getAllKeywords();
+        if (result.isPresent()) {
+            return ResponseEntity.status(HttpStatus.OK).body(result);
+        }
+
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+    }
 }

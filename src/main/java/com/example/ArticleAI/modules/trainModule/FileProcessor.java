@@ -75,7 +75,7 @@ public class FileProcessor {
                 //todo сохранять стейт статьи при нужных результатов
             }
         }
-
+        log.info("all files saved");
         return Optional.of(importedFiles);
     }
 
