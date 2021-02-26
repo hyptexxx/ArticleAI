@@ -19,6 +19,6 @@
 <body>
 <div id=q-app></div>
 <script src=/js/vendor.3270e5cf.js></script>
-<script src=/js/app.9f39229d.js></script>
+<script src=/js/app.88da1bf2.js></script>
 </body>
 </html>

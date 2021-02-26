@@ -32,7 +32,7 @@ public class RequestService implements IRequestService {
         String responseBody = null;
         final RequestBody body = RequestBody.create(new Gson().toJson(articleYake), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("http://10.10.1.30:5000/yake/")
+                .url("http://10.10.1.28:5000/yake/")
                 .post(body)
                 .build();
         try {

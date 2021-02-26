@@ -3,7 +3,8 @@ package com.example.ArticleAI.configurations;
 public enum AllowedContentTypes {
     PDF("application/pdf"),
     DOCX("application/vnd.openxmlformats-officedocument.wordprocessingml.document"),
-    DOC("application/msword");
+    DOC("application/msword"),
+    OCTET("application/octet-stream");
 
     private String displayString;
 

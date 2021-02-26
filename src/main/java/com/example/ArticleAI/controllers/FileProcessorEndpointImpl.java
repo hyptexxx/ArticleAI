@@ -52,18 +52,22 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         Map<LoadedFile, Boolean> allowedFiles;
 
         if (!files.isEmpty()) {
+            log.info("file saved");
             setSupportFiles(files);
             allowedFiles = getAllowedFiles();
             if (!allowedFiles.isEmpty()) {
+                log.info("allowed");
                 try {
                     savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
                     if (isTrainSet(files)) {
 
                     } else {
+                        log.info("2");
                         Integer generatedArticleId;
                         ArticleYake parsedArticle = parseText(savedFiles, articleYake);
                         Optional<Integer> generatedArticleIdOptional = yakeRepository.saveArticle(parsedArticle);
                         if (generatedArticleIdOptional.isPresent()) {
+                            log.info("3");
                             generatedArticleId = generatedArticleIdOptional.get();
 
                             return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
@@ -77,34 +81,9 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                     return ResponseEntity.status(HttpStatus.OK).body(null);
                 }
             }
-//
-//
-//            setSupportFiles(files);
-//            allowedFiles = getAllowedFiles();
-//            Optional<Map<FullArticle, LoadedFile>> response = Optional.empty();
-//            Map<LoadedFile, ArticleYake> mergedText;
-//            if (!allowedFiles.isEmpty()) {
-//                try {
-//                    savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
-//                    mergedText = mapText(savedFiles, articleYake);
-//                    response = sendPoolRequests(mergedText);
-//                } catch (FileAlreadyExistsException e) {
-//                    return ResponseEntity.status(HttpStatus.OK).body(sendPoolRequests(m.put(null, articleYake)));
-//                }
-//            }
-//
-//            return response.<ResponseEntity<Object>>map(fullArticleLoadedFileMap -> ResponseEntity
-//                    .status(HttpStatus.OK)
-//                    .body(fullArticleLoadedFileMap
-//                            .keySet().stream()
-//                            .findFirst()
-//                            .get()
-//                            .getSavedYakeResponse())).orElseGet(() -> ResponseEntity
-//                    .status(HttpStatus.NOT_FOUND)
-//                    .body(null));
-//
         }
 
+        log.info("file failed");
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
     }
 
@@ -128,12 +107,13 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
         for (MultipartFile file : files) {
             allowedContentType = Optional.ofNullable(AllowedContentTypes.fromDisplayString(file.getContentType()));
-
+            log.info(file.getContentType());
             if (allowedContentType.isPresent()) {
                 switch (allowedContentType.get()) {
                     case PDF:
                     case DOCX:
                     case DOC:
+                    case OCTET:
                         this.mappedSupportedFiles.put(LoadedFile.builder()
                                 .loadedFile(file)
                                 .type(allowedContentType.get())
@@ -167,6 +147,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                         break;
                     case DOC:
                     case DOCX:
+                    case OCTET:
                         result.put(loadedFile, poiService.getArticleYakeText(loadedFile.getSavedFile(), articleYake));
                         break;
                 }
@@ -186,6 +167,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                         break;
                     case DOC:
                     case DOCX:
+                    case OCTET:
                         result = poiService.getArticleYakeText(loadedFile.getSavedFile(), articleYake);
                         break;
                 }
