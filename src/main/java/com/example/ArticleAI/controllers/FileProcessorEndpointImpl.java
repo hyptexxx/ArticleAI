@@ -8,6 +8,7 @@ import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.FullArticle;
 import com.example.ArticleAI.models.LoadedFile;
 import com.example.ArticleAI.models.YakeResponse;
+import com.example.ArticleAI.modules.nlpFilter.service.NlpFilterService;
 import com.example.ArticleAI.modules.recomendationsResolver.service.implementations.NlpRequestService;
 import com.example.ArticleAI.modules.recomendationsResolver.service.implementations.RecomendationsService;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
@@ -29,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileAlreadyExistsException;
+import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -43,7 +45,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final IITextService iiTextService;
     private final IYakeService yakeService;
     private final YakeRepository yakeRepository;
-    private final NlpRequestService nlpRequestService;
+    private final NlpFilterService nlpFilterService;
 
     private final FileProcessor fileProcessor;
 
@@ -52,45 +54,51 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
 
     @Override
-    public ResponseEntity<Object> processFiles(List<MultipartFile> files, ArticleYake articleYake) throws IOException {
-        return ResponseEntity.status(HttpStatus.OK).body(nlpRequestService.getRecommendations(yakeRepository.getAllNgram()));
+    public ResponseEntity<Object> processFiles(List<MultipartFile> files, ArticleYake articleYake) throws IOException, ParseException {
+
+//        return ResponseEntity.status(HttpStatus.OK).body(nlpFilterService.doFilter(yakeRepository.getAllNgram().stream()
+//                .map(ngram -> YakeResponse.builder()
+//                        .ngram(ngram)
+//                        .score(0)
+//                        .build())
+//                .collect(Collectors.toList())));
 
 //
-//        Optional<List<LoadedFile>> savedFiles;
-//        Map<LoadedFile, Boolean> allowedFiles;
-//
-//        if (!files.isEmpty()) {
-//            log.info("file saved");
-//            setSupportFiles(files);
-//            allowedFiles = getAllowedFiles();
-//            if (!allowedFiles.isEmpty()) {
-//                log.info("allowed");
-//                try {
-//                    savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
-//                    if (isTrainSet(files)) {
-//                        doTrain(savedFiles, articleYake);
-//                    } else {
-//                        Integer generatedArticleId;
-//                        ArticleYake parsedArticle = parseText(savedFiles, articleYake).get(0);
-//                        Optional<Integer> generatedArticleIdOptional = yakeRepository.saveArticle(parsedArticle);
-//                        if (generatedArticleIdOptional.isPresent()) {
-//                            generatedArticleId = generatedArticleIdOptional.get();
-//
-//                            return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
-//                                    .generatedArticleId(generatedArticleId)
-//                                    .yakeResponse(yakeService.parseYakeResponseJSON(requestService.sendRequest(parsedArticle)))
-//                                    .build());
-//                        }
-//                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
-//                    }
-//                } catch (FileAlreadyExistsException e) {
-//                    return ResponseEntity.status(HttpStatus.OK).body(null);
-//                }
-//            }
-//        }
-//
-//        log.info("file failed");
-//        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+        Optional<List<LoadedFile>> savedFiles;
+        Map<LoadedFile, Boolean> allowedFiles;
+
+        if (!files.isEmpty()) {
+            log.info("file saved");
+            setSupportFiles(files);
+            allowedFiles = getAllowedFiles();
+            if (!allowedFiles.isEmpty()) {
+                log.info("allowed");
+                try {
+                    savedFiles = fileProcessor.saveFilesToFilesystem(allowedFiles.keySet());
+                    if (isTrainSet(files)) {
+                        doTrain(savedFiles, articleYake);
+                    } else {
+                        Integer generatedArticleId;
+                        ArticleYake parsedArticle = parseText(savedFiles, articleYake).get(0);
+                        Optional<Integer> generatedArticleIdOptional = yakeRepository.saveArticle(parsedArticle);
+                        if (generatedArticleIdOptional.isPresent()) {
+                            generatedArticleId = generatedArticleIdOptional.get();
+
+                            return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
+                                    .generatedArticleId(generatedArticleId)
+                                    .yakeResponse(yakeService.parseYakeResponseJSON(requestService.sendRequest(parsedArticle)))
+                                    .build());
+                        }
+                        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+                    }
+                } catch (FileAlreadyExistsException e) {
+                    return ResponseEntity.status(HttpStatus.OK).body(null);
+                }
+            }
+        }
+
+        log.info("file failed");
+        return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
     }
 
 

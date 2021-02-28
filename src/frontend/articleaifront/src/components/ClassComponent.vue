@@ -2,8 +2,8 @@
   q-card(style='width: 100%; height: 100%; padding: 20px')
     q-card-section
       q-stepper(v-model='step' ref='stepper' color='primary' animated='')
-
         q-step(:name='1' title='Загрузите публикацию' icon='settings' :done='step > 1' style='min-height: 200px;')
+          q-checkbox(v-model='isExperementalEnabled' label='Включить эксперементальный режим')
           q-file(filled='' bottom-slots='' multiple v-model='files' label='Публикация' counter='' max-files='1000')
             template(v-slot:before='')
               q-icon(name='folder_open')
@@ -54,7 +54,16 @@
                   | {{ props.row.score }}
                   q-popup-edit(v-model='props.row.score' title='Редактировать значение важности' buttons='')
                     q-input(type='number' v-model='props.row.score' dense='' autofocus='')
-
+          q-table(
+            title='Отфильтрованые ключевые слова'
+            :data='nlpResponse'
+            :separator='separator'
+            virtual-scroll
+            :columns='nlpResponseColumns'
+            :loading="loading"
+            pagination.sync="pagination"
+            :rows-per-page-options="[0]"
+            row-key='ngram')
         q-step(:name='4' title='Анализ актуальности' icon='assignment' style='min-height: 200px;')
           q-table(
             title='Класс-актуальность'
@@ -128,6 +137,7 @@ import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
 import { Class } from 'src/models/Class'
+import { NlpResponse } from 'src/models/NlpResponse'
 
 @Component
 export default class ClassComponent extends Mixins(RequestService) {
@@ -136,6 +146,7 @@ export default class ClassComponent extends Mixins(RequestService) {
   private pagination = { rowsPerPage: 0 }
   private step = 1
   private articleId: number | null = null
+  private isExperementalEnabled = false
   private columns = [{
     name: 'ngram',
     required: true,
@@ -159,6 +170,13 @@ export default class ClassComponent extends Mixins(RequestService) {
     }],
     generatedArticleId: 0
   }
+
+  nlpResponse: NlpResponse[] = []
+
+  nlpResponseColumns = [
+    { name: 'ngram', label: 'Имя класса', field: 'ngram', align: 'center', style: 'width: 10px' },
+    { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' }
+  ]
 
   private classColumns = [
     { name: 'className', label: 'Имя класса', field: 'className', align: 'center', style: 'width: 10px' },
@@ -204,8 +222,28 @@ export default class ClassComponent extends Mixins(RequestService) {
     switch (this.step) {
       case 3:
         this.articleFile.files = this.files
-        console.log(this.articleFile.files)
         this.data = await this.sendAndAnalyse(this.articleFile)
+        if (this.data && this.data.yakeResponse.length) {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+          this.nlpResponse = await this.sendToNlp(this.data.yakeResponse)
+          if (this.nlpResponse.length === 0) {
+            this.$q.notify({
+              color: 'warning',
+              message: 'Не удалось отфильтровать данные по публикации',
+              icon: 'report_problem',
+              progress: true,
+              position: 'bottom'
+            })
+          }
+        } else {
+          this.$q.notify({
+            color: 'warning',
+            message: 'Не удалось получить данные по публикации',
+            icon: 'report_problem',
+            progress: true,
+            position: 'bottom'
+          })
+        }
         break
       case 4:
         if (this.data.generatedArticleId) {

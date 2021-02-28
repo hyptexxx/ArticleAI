@@ -14,11 +14,11 @@
     <link rel=icon type=image/png sizes=16x16 href=icons/favicon-16x16.png>
     <link rel=icon type=image/ico href=favicon.ico>
     <link href=/css/vendor.dc20e560.css rel=stylesheet>
-    <link href=/css/app.e63a86ed.css rel=stylesheet>
+    <link href=/css/app.eb795434.css rel=stylesheet>
 </head>
 <body>
 <div id=q-app></div>
-<script src=/js/vendor.3270e5cf.js></script>
-<script src=/js/app.88da1bf2.js></script>
+<script src=/js/vendor.546f7f7a.js></script>
+<script src=/js/app.3b3bccc1.js></script>
 </body>
 </html>
