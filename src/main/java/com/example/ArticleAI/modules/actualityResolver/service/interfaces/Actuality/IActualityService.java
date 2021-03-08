@@ -6,6 +6,7 @@ import com.example.ArticleAI.modules.classesResolver.models.Class;
 
 import java.util.List;
 
+@Deprecated
 public interface IActualityService {
     List<ActualityDTO> getActuality(List<Class> classes);
 }

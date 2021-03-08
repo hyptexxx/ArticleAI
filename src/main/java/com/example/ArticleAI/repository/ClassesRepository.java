@@ -1,5 +1,7 @@
 package com.example.ArticleAI.repository;
 
+import com.example.ArticleAI.mappers.ClassEmbeddingMapper;
+import com.example.ArticleAI.models.KeywordClass;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -8,7 +10,6 @@ import org.springframework.stereotype.Repository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 @Repository
@@ -16,16 +17,9 @@ import java.util.stream.Collectors;
 public class ClassesRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    public List<String> getAllClassesEmbeddings() {
-        List<String> result = new ArrayList<>();
-        Optional.of(jdbcTemplate.queryForList("select embedding from classes_embeddings", String.class))
-                .ifPresent(list -> {
-                    result.addAll(list.stream()
-                            .map(String::trim)
-                            .map(embedding -> embedding.replaceAll("\r\n", ""))
-                            .map(embedding -> embedding.replaceAll("\\s", ""))
-                            .collect(Collectors.toList()));
-                });
+    public List<KeywordClass> getAllClassesEmbeddings() {
+        List<KeywordClass> result;
+        result = jdbcTemplate.query("select embedding, class_name from classes_embeddings", new ClassEmbeddingMapper());
         return result;
     }
 }

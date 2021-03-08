@@ -22,7 +22,7 @@ public class SearchApiRequestTest {
 
         }
 
-        classes.forEach(clazz -> actualityPairs.put(clazz, new SearchAPIService().getSearchCount(clazz)));
+        classes.forEach(clazz -> actualityPairs.put(clazz, new SearchAPIService().getSearchCount("clazz")));
         Assertions.assertNotNull(actualityPairs);
     }
 }

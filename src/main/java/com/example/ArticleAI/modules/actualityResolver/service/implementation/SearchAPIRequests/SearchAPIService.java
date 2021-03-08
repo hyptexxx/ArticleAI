@@ -14,20 +14,17 @@ import java.util.stream.Stream;
 @Service
 public class SearchAPIService {
     @SneakyThrows
-    public Long getSearchCount(Class className) {
+    public Long getSearchCount(String className) {
         long searchCount = 0L;
-        if (StringUtils.isNotBlank(className.getKeywordText())) {
-            Document doc = Jsoup.connect("https://www.google.com/search?q=" + className.getKeywordText()).get();
+        Document doc = Jsoup.connect("https://www.google.com/search?q=" + className).get();
 
-            String searchResult = doc.select("#result-stats").first().ownText();
-            if (!StringUtils.isBlank(searchResult)) {
-                searchCount = Long.parseLong(Stream.of(searchResult.split(""))
-                        .filter(str -> Character.isDigit(searchResult.charAt(searchResult.indexOf(str))))
-                        .map(StringBuilder::new)
-                        .collect(Collectors.joining("")));
-            }
+        String searchResult = doc.select("#result-stats").first().ownText();
+        if (!StringUtils.isBlank(searchResult)) {
+            searchCount = Long.parseLong(Stream.of(searchResult.split(""))
+                    .filter(str -> Character.isDigit(searchResult.charAt(searchResult.indexOf(str))))
+                    .map(StringBuilder::new)
+                    .collect(Collectors.joining("")));
         }
-
 
         return searchCount;
     }

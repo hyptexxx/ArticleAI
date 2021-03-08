@@ -3,6 +3,7 @@ package com.example.ArticleAI.controllers.REST;
 import com.example.ArticleAI.DAO.interfaces.YakeRepository;
 import com.example.ArticleAI.dto.ActualityDTO;
 import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
+import com.example.ArticleAI.modules.actualityResolver.service.implementation.Actuality.ActualityService;
 import com.example.ArticleAI.modules.actualityResolver.service.interfaces.Actuality.IActualityService;
 import com.example.ArticleAI.modules.classesResolver.ClassesResolver;
 import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
@@ -28,7 +29,7 @@ import java.util.stream.Collectors;
 public class ClassesController {
 
     private final IYakeService yakeService;
-    private final IActualityService actualityService;
+    private final ActualityService actualityService;
 
     private final ClassesResolver classesResolver;
 
@@ -61,9 +62,9 @@ public class ClassesController {
                 return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
             }
 
-            actualities = actualityService.getActuality(classes);
+//            actualities = actualityService.getActuality(new ArrayList<>());
 
-            return ResponseEntity.status(HttpStatus.OK).body(actualities);
+            return ResponseEntity.status(HttpStatus.OK).body(null);
         }
 
         log.info("Failed to save Yake params");

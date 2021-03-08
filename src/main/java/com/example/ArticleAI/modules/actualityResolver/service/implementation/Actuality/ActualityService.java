@@ -1,6 +1,7 @@
 package com.example.ArticleAI.modules.actualityResolver.service.implementation.Actuality;
 
 import com.example.ArticleAI.dto.ActualityDTO;
+import com.example.ArticleAI.models.ClassDistance;
 import com.example.ArticleAI.modules.actualityResolver.DAO.interfaces.IActualityResolverDAO;
 import com.example.ArticleAI.modules.actualityResolver.models.Actuality;
 import com.example.ArticleAI.modules.actualityResolver.parser.ClassParser;
@@ -17,35 +18,13 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
-public class ActualityService implements IActualityService {
-
-    private final
-    IActualityResolverDAO actualityResolverDAO;
-
+@Deprecated
+public class ActualityService {
+    @Deprecated
     private final SearchAPIService searchAPIService;
-    @Override
-    public List<ActualityDTO> getActuality(List<Class> classes) {
-        List<ActualityDTO> actualityPair = new ArrayList<>();
-        List<Actuality> actuality = new ArrayList<>();
-        classes.forEach(parsedClass -> {
-                    Long searchCount = searchAPIService.getSearchCount(parsedClass);
-                    actualityPair.add(ActualityDTO.builder()
-                            .actuality(searchCount)
-                            .keywordText(parsedClass.getKeywordText())
-                            .className(parsedClass.getClassName())
-                            .build());
-                    actuality.add(Actuality.builder()
-                            .actuality(searchCount)
-                            .classId(parsedClass.getClassId())
-                            .build());
-                }
-        );
-
-        try {
-            actualityResolverDAO.save(actuality);
-        } catch (SQLIntegrityConstraintViolationException e) {
-            e.printStackTrace();
-        }
-        return actualityPair;
+    @Deprecated
+    public Long getActuality(String clazz) {
+        return searchAPIService.getSearchCount(clazz);
     }
+
 }

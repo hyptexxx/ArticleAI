@@ -6,7 +6,7 @@ import ArticleFileMeta from '../../models/ArticleFile/ArticleFileMeta'
 import { FullArticle } from '../../models/FullArticle'
 import { Class } from '../../models/Class'
 import { ClassActuality } from 'src/models/ClassActuality'
-import { NlpResponse } from 'src/models/NlpResponse'
+import { Recommendations } from 'src/models/Recommendation'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
@@ -27,11 +27,11 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return result.data
   }
 
-  async sendToNlp (data: YakeResponse[]): Promise<NlpResponse[]> {
+  async sendToNlp (data: YakeResponse[]): Promise<Recommendations[]> {
     const formData: FormData = new FormData()
     formData.append('yakeData', JSON.stringify(data))
 
-    const result = await this.$axios.post<NlpResponse[]>('/api/nlp/analyse', formData)
+    const result = await this.$axios.post<Recommendations[]>('/api/nlp/analyse', formData)
 
     return result.data
   }

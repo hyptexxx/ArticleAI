@@ -114,7 +114,7 @@
                 .text-subtitle2 Результаты анализа
               q-card-section
                 q-chip(square='' color='green' text-color='white' icon-right='star')
-                  | Актуальность составляет 90%
+                  | Актуальность составляет {{this.recomendation.actuality}}%
 
         template(v-slot:navigation='')
           q-stepper-navigation
@@ -139,7 +139,7 @@ import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
 import { Class } from 'src/models/Class'
-import { NlpResponse } from 'src/models/NlpResponse'
+import { Recommendations } from 'src/models/Recommendation'
 
 @Component
 export default class ClassComponent extends Mixins(RequestService) {
@@ -178,7 +178,7 @@ export default class ClassComponent extends Mixins(RequestService) {
     generatedArticleId: 0
   }
 
-  nlpResponse: NlpResponse[] = []
+  recomendation: Recommendations = {}
 
   nlpResponseColumns = [
     { name: 'ngram', label: 'Ключевое слово', field: 'ngram', align: 'center', style: 'width: 10px' },
@@ -229,6 +229,23 @@ export default class ClassComponent extends Mixins(RequestService) {
     this.loading = true
     switch (this.step) {
       case 3:
+        break
+      case 4:
+        this.classes.splice(0, this.classes.length)
+        if (this.data.generatedArticleId) {
+          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
+          if (this.classes.length === 0) {
+            this.$q.notify({
+              color: 'warning',
+              message: 'Не удалось получить по актуальности',
+              icon: 'report_problem',
+              progress: true,
+              position: 'bottom'
+            })
+          }
+        }
+        break
+      case 5:
         this.data.yakeResponse = this.data.yakeResponse.splice(0, this.data.yakeResponse.length)
         this.nlpResponse = this.nlpResponse.splice(0, this.nlpResponse.length)
         if (this.articleFile) {
@@ -237,7 +254,7 @@ export default class ClassComponent extends Mixins(RequestService) {
           if (this.isExperementalEnabled) {
             if (this.data && this.data.yakeResponse.length) {
               // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-              this.nlpResponse = await this.sendToNlp(this.data.yakeResponse)
+              this.recomendation = await this.sendToNlp(this.data.yakeResponse)
               if (this.nlpResponse.length === 0) {
                 this.$q.notify({
                   color: 'warning',
@@ -256,21 +273,6 @@ export default class ClassComponent extends Mixins(RequestService) {
                 position: 'bottom'
               })
             }
-          }
-        }
-        break
-      case 4:
-        this.classes.splice(0, this.classes.length)
-        if (this.data.generatedArticleId) {
-          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
-          if (this.classes.length === 0) {
-            this.$q.notify({
-              color: 'warning',
-              message: 'Не удалось получить по актуальности',
-              icon: 'report_problem',
-              progress: true,
-              position: 'bottom'
-            })
           }
         }
         break
