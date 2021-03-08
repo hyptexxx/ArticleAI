@@ -9,5 +9,6 @@ import lombok.*;
 @NoArgsConstructor
 public class NlpResponse {
     String ngram;
-    float value;
+    double value;
+    int isGood;
 }

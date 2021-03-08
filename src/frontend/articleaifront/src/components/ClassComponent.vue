@@ -14,12 +14,12 @@
 
         q-step(:name='2' caption='не обязательно' title='Определение параметров YAKE' icon='assignment' style='min-height: 200px;')
           .q-pa-md
-            q-input(v-model='articleFile.meta.language' label='language')
-            q-input(v-model='articleFile.meta.maxNgramSize' label='maxNgramSize')
-            q-input(v-model='articleFile.meta.deduplicationThresold' label='deduplication_thresold')
-            q-input(v-model='articleFile.meta.deduplicationAlgo' label='deduplication_algo')
-            q-input(v-model='articleFile.meta.windowSize' label='windowSize')
-            q-input(v-model='articleFile.meta.numberOfKeywords' label='numberOfKeywords')
+            q-input(v-if='files' v-model='articleFile.meta.language' label='language')
+            q-input(v-if='files' v-model='articleFile.meta.maxNgramSize' label='maxNgramSize')
+            q-input(v-if='files' v-model='articleFile.meta.deduplicationThresold' label='deduplication_thresold')
+            q-input(v-if='files' v-model='articleFile.meta.deduplicationAlgo' label='deduplication_algo')
+            q-input(v-if='files' v-model='articleFile.meta.windowSize' label='windowSize')
+            q-input(v-if='files' v-model='articleFile.meta.numberOfKeywords' label='numberOfKeywords')
 
         q-step(:name='3' title='Определение ключевых слов' icon='create_new_folder' :done='step > 2' style='min-height: 200px;')
           q-btn(color='green' :disable='loading' label='Добавить ключевое слово' @click='addRow')
@@ -54,6 +54,7 @@
                   | {{ props.row.score }}
                   q-popup-edit(v-model='props.row.score' title='Редактировать значение важности' buttons='')
                     q-input(type='number' v-model='props.row.score' dense='' autofocus='')
+          q-separator
           q-table(
             title='Отфильтрованые ключевые слова'
             :data='nlpResponse'
@@ -63,7 +64,8 @@
             :loading="loading"
             pagination.sync="pagination"
             :rows-per-page-options="[0]"
-            row-key='ngram')
+            row-key='ngram',
+            v-if='isExperementalEnabled')
         q-step(:name='4' title='Анализ актуальности' icon='assignment' style='min-height: 200px;')
           q-table(
             title='Класс-актуальность'
@@ -116,7 +118,7 @@
 
         template(v-slot:navigation='')
           q-stepper-navigation
-            q-btn(@click='$refs.stepper.next(), nextHandler()' color='primary' :label="step === 4 ? 'Получить рекомендации' : 'Следующий шаг'" v-if="step !== 5")
+            q-btn(@click='$refs.stepper.next(), nextHandler()' color='primary' :label="step === 4 ? 'Получить рекомендации' : 'Следующий шаг'" v-if="files && step !== 5")
             q-btn.q-ml-sm(v-if='step > 1' flat='' color='primary' @click='$refs.stepper.previous()' label='Назад')
         template(v-slot:message='')
           q-banner.bg-purple-8.text-white.q-px-lg(v-if='step === 1')
@@ -132,7 +134,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { Component, Mixins, Watch } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
@@ -163,6 +165,11 @@ export default class ClassComponent extends Mixins(RequestService) {
     generatedArticleId: 0
   }]
 
+  @Watch('isExperementalEnabled')
+  qwe () {
+    console.log(this.isExperementalEnabled)
+  }
+
   data: AnalyseResponse = {
     yakeResponse: [{
       ngram: '',
@@ -174,8 +181,9 @@ export default class ClassComponent extends Mixins(RequestService) {
   nlpResponse: NlpResponse[] = []
 
   nlpResponseColumns = [
-    { name: 'ngram', label: 'Имя класса', field: 'ngram', align: 'center', style: 'width: 10px' },
-    { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' }
+    { name: 'ngram', label: 'Ключевое слово', field: 'ngram', align: 'center', style: 'width: 10px' },
+    { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' },
+    { name: 'isGood', label: 'Превышение порога', field: 'isGood', align: 'center', style: 'width: 10px' }
   ]
 
   private classColumns = [
@@ -221,33 +229,49 @@ export default class ClassComponent extends Mixins(RequestService) {
     this.loading = true
     switch (this.step) {
       case 3:
-        this.articleFile.files = this.files
-        this.data = await this.sendAndAnalyse(this.articleFile)
-        if (this.data && this.data.yakeResponse.length) {
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
-          this.nlpResponse = await this.sendToNlp(this.data.yakeResponse)
-          if (this.nlpResponse.length === 0) {
+        this.data.yakeResponse = this.data.yakeResponse.splice(0, this.data.yakeResponse.length)
+        this.nlpResponse = this.nlpResponse.splice(0, this.nlpResponse.length)
+        if (this.articleFile) {
+          this.articleFile.files = this.files
+          this.data = await this.sendAndAnalyse(this.articleFile)
+          if (this.isExperementalEnabled) {
+            if (this.data && this.data.yakeResponse.length) {
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+              this.nlpResponse = await this.sendToNlp(this.data.yakeResponse)
+              if (this.nlpResponse.length === 0) {
+                this.$q.notify({
+                  color: 'warning',
+                  message: 'Не удалось отфильтровать данные по публикации',
+                  icon: 'report_problem',
+                  progress: true,
+                  position: 'bottom'
+                })
+              }
+            } else {
+              this.$q.notify({
+                color: 'warning',
+                message: 'Не удалось получить данные по публикации',
+                icon: 'report_problem',
+                progress: true,
+                position: 'bottom'
+              })
+            }
+          }
+        }
+        break
+      case 4:
+        this.classes.splice(0, this.classes.length)
+        if (this.data.generatedArticleId) {
+          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
+          if (this.classes.length === 0) {
             this.$q.notify({
               color: 'warning',
-              message: 'Не удалось отфильтровать данные по публикации',
+              message: 'Не удалось получить по актуальности',
               icon: 'report_problem',
               progress: true,
               position: 'bottom'
             })
           }
-        } else {
-          this.$q.notify({
-            color: 'warning',
-            message: 'Не удалось получить данные по публикации',
-            icon: 'report_problem',
-            progress: true,
-            position: 'bottom'
-          })
-        }
-        break
-      case 4:
-        if (this.data.generatedArticleId) {
-          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
         }
         break
     }

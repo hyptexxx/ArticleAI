@@ -3,6 +3,7 @@ package com.example.ArticleAI.mappers;
 import com.example.ArticleAI.models.NlpResponse;
 import org.json.JSONArray;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +18,8 @@ public class NlpFilterMapper {
                 result.add(
                         NlpResponse.builder()
                                 .ngram(jsonArray.getJSONObject(i).getString("ngram"))
-                                .value(jsonArray.getJSONObject(i).getInt("value"))
+                                .value(jsonArray.getJSONObject(i).getDouble("value"))
+                                .isGood(jsonArray.getJSONObject(i).getInt("isGood"))
                                 .build()
                 );
             }
