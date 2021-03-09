@@ -16,6 +16,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -41,15 +43,21 @@ public class DistanceService {
 
         List<ClassDistance> classDistance = ClassDistanceMapper.parse(response.getBody()).get();
 
+        List<ClassKeywordPair> classKeywordPairs
+                = getClassKeywordPair(getClassesForKeywords(keywords, classDistance), classesEmbeddings);
+
         return Recomendation.builder()
                 .actuality(getActualityPercent(getMaxActualityClass(classesEmbeddings),
                         getClassesForKeywords(keywords, classDistance),
                         classesEmbeddings))
                 .keywordClassMax(getMaxActualityClass(classesEmbeddings).getName())
-                .maxClassKeywordPairs(getMaxClassesForKeywords(getClassesForKeywords(keywords, classDistance),
-                        classesEmbeddings))
-                .minClassKeywordPairs(getMinClassesForKeywords(getClassesForKeywords(keywords, classDistance),
-                        classesEmbeddings))
+                .classKeywordPairs(classKeywordPairs)
+                .classKeywordPairMin(classKeywordPairs.stream()
+                        .min(Comparator.comparing(ClassKeywordPair::getActuality))
+                        .orElseThrow(NoSuchElementException::new))
+                .classKeywordPairMax(classKeywordPairs.stream()
+                        .max(Comparator.comparing(ClassKeywordPair::getActuality))
+                        .orElseThrow(NoSuchElementException::new))
                 .build();
     }
 
@@ -65,39 +73,21 @@ public class DistanceService {
         return result;
     }
 
-    public List<ClassKeywordPair> getMaxClassesForKeywords(List<ClassKeywordPair> classKeywords,
-                                                           List<KeywordClass> classesEmbeddings) {
+    public List<ClassKeywordPair> getClassKeywordPair(List<ClassKeywordPair> classKeywords,
+                                                      List<KeywordClass> classesEmbeddings) {
         List<ClassKeywordPair> result = new ArrayList<>();
-        classKeywords.forEach(className -> {
-
-            KeywordClass qwe = classesEmbeddings.stream()
-                    .filter(clazz -> clazz.getName().equals(className.getCluster()))
-                    .min(Comparator.comparing(KeywordClass::getClassActuality))
-                    .orElseThrow(NoSuchElementException::new);
-
-            result.add(ClassKeywordPair.builder()
-                    .keyword(className.getKeyword())
-                    .cluster(classesEmbeddings.stream()
-                            .filter(clazz -> clazz.getName().equals(className.getCluster()))
-                            .min(Comparator.comparing(KeywordClass::getClassActuality))
-                            .orElseThrow(NoSuchElementException::new).getName())
-                    .build());
-        });
-        return result;
-    }
-
-    public List<ClassKeywordPair> getMinClassesForKeywords(List<ClassKeywordPair> classKeywords,
-                                                           List<KeywordClass> classesEmbeddings) {
-        List<ClassKeywordPair> result = new ArrayList<>();
-        classKeywords.forEach(className -> {
-            result.add(ClassKeywordPair.builder()
-                    .keyword(className.getKeyword())
-                    .cluster(classesEmbeddings.stream()
-                            .filter(clazz -> clazz.getName().equals(className.getCluster()))
-                            .max(Comparator.comparing(KeywordClass::getClassActuality))
-                            .orElseThrow(NoSuchElementException::new).getName())
-                    .build());
-        });
+        classKeywords.forEach(className -> result.add(ClassKeywordPair.builder()
+                .keyword(className.getKeyword())
+                .cluster(classesEmbeddings.stream()
+                        .filter(clazz -> clazz.getName().equals(className.getCluster()))
+                        .max(Comparator.comparing(KeywordClass::getClassActuality))
+                        .orElseThrow(NoSuchElementException::new).getName())
+                .actuality(classesEmbeddings.stream()
+                        .filter(e -> e.getName().equals(className.getCluster()))
+                        .findFirst()
+                        .orElseThrow(NoSuchElementException::new)
+                        .getClassActuality())
+                .build()));
         return result;
     }
 
@@ -116,10 +106,16 @@ public class DistanceService {
                 .map(KeywordClass::getClassActuality)
                 .collect(Collectors.toList())));
 
-        return actualities.stream()
+        return withBigDecimal(actualities.stream()
                 .mapToDouble(Long::doubleValue)
                 .map(row -> (row * 100) / maxActuality.getClassActuality())
                 .average()
-                .orElseThrow(NoSuchElementException::new);
+                .orElseThrow(NoSuchElementException::new), 3);
+    }
+
+    public static double withBigDecimal(double value, int places) {
+        BigDecimal bigDecimal = new BigDecimal(value);
+        bigDecimal = bigDecimal.setScale(places, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 }

@@ -87,6 +87,10 @@
               q-card-section
                 q-chip(square='' text-color='white' class='bg-indigo-5' icon-right='edit')
                   | Внесите предложенные правки в ключевые слова
+              q-card-section
+                .text-subtitle2 Не вносите в текст следующие ключевые слова:
+                q-chip(square='' text-color='white' color='red' icon-right='remove')
+                  | {{this.recomendation.classKeywordPairMin.keyword}}
               q-separator(dark='')
               q-card-actions
                 q-btn(flat='') Принять
@@ -98,11 +102,7 @@
                 .text-subtitle2 Ключевые слова
               q-card-section
                 q-chip(square='' text-color='white' color='green' icon-right='add')
-                  | Пример ключевого слова 1
-                q-chip(square='' text-color='white' color='green' icon-right='add')
-                  | Пример ключевого слова 2
-                q-chip(square='' text-color='white' color='red' icon-right='remove')
-                  | Пример ключевого слова 3
+                  | {{this.recomendation.classKeywordPairMax.keyword}}
               q-separator(dark='')
               q-card-actions
                 q-btn(flat='') Принять
@@ -110,10 +110,21 @@
 
             q-card.my-card.bg-indigo-7.text-white
               q-card-section
+                .text-h6 Предполагаемые темы по ключевым словам текста статьи
+                .text-subtitle2 Ключевые слова
+              q-card-section
+                q-chip(square='' text-color='white' color='green' v-for="pair in this.recomendation.classKeywordPairs")
+                  | {{pair.cluster}}
+              q-separator(dark='')
+
+            q-card.my-card.bg-indigo-7.text-white
+              q-card-section
                 .text-h6 Общая статистика
                 .text-subtitle2 Результаты анализа
               q-card-section
-                q-chip(square='' color='green' text-color='white' icon-right='star')
+                q-chip(square='' v-if="this.recomendation.actuality > 50" color='green' text-color='white' icon-right='star')
+                  | Актуальность составляет {{this.recomendation.actuality}}%
+                q-chip(square='' v-else color='yellow' text-color='black' icon-right='star')
                   | Актуальность составляет {{this.recomendation.actuality}}%
 
         template(v-slot:navigation='')
@@ -140,6 +151,7 @@ import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
 import { Class } from 'src/models/Class'
 import { Recommendations } from 'src/models/Recommendation'
+import { NlpResponse } from 'src/models/NlpResponse'
 
 @Component
 export default class ClassComponent extends Mixins(RequestService) {
@@ -147,6 +159,8 @@ export default class ClassComponent extends Mixins(RequestService) {
   private separator = 'cell'
   private pagination = { rowsPerPage: 0 }
   private step = 1
+  nlpResponse: NlpResponse[] = []
+
   private articleId: number | null = null
   private isExperementalEnabled = false
   private columns = [{
@@ -178,7 +192,25 @@ export default class ClassComponent extends Mixins(RequestService) {
     generatedArticleId: 0
   }
 
-  recomendation: Recommendations = {}
+  recomendation: Recommendations = {
+    actuality: 0,
+    classKeywordPairMax: {
+      actuality: 0,
+      cluster: '',
+      keyword: ''
+    },
+    classKeywordPairMin: {
+      actuality: 0,
+      cluster: '',
+      keyword: ''
+    },
+    classKeywordPairs: [{
+      actuality: 0,
+      cluster: '',
+      keyword: ''
+    }],
+    keywordClassMax: ''
+  }
 
   nlpResponseColumns = [
     { name: 'ngram', label: 'Ключевое слово', field: 'ngram', align: 'center', style: 'width: 10px' },
@@ -247,13 +279,14 @@ export default class ClassComponent extends Mixins(RequestService) {
         break
       case 5:
         this.data.yakeResponse = this.data.yakeResponse.splice(0, this.data.yakeResponse.length)
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,  @typescript-eslint/no-unsafe-member-access
         this.nlpResponse = this.nlpResponse.splice(0, this.nlpResponse.length)
         if (this.articleFile) {
           this.articleFile.files = this.files
           this.data = await this.sendAndAnalyse(this.articleFile)
           if (this.isExperementalEnabled) {
             if (this.data && this.data.yakeResponse.length) {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
+              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
               this.recomendation = await this.sendToNlp(this.data.yakeResponse)
               if (this.nlpResponse.length === 0) {
                 this.$q.notify({

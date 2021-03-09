@@ -12,6 +12,7 @@ import java.util.List;
 public class Recomendation {
     String keywordClassMax;
     double actuality;
-    List<ClassKeywordPair> maxClassKeywordPairs;
-    List<ClassKeywordPair> minClassKeywordPairs;
+    List<ClassKeywordPair> classKeywordPairs;
+    ClassKeywordPair classKeywordPairMax;
+    ClassKeywordPair classKeywordPairMin;
 }

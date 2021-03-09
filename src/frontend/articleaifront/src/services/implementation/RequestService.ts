@@ -27,11 +27,11 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     return result.data
   }
 
-  async sendToNlp (data: YakeResponse[]): Promise<Recommendations[]> {
+  async sendToNlp (data: YakeResponse[]): Promise<Recommendations> {
     const formData: FormData = new FormData()
     formData.append('yakeData', JSON.stringify(data))
 
-    const result = await this.$axios.post<Recommendations[]>('/api/nlp/analyse', formData)
+    const result = await this.$axios.post<Recommendations>('/api/nlp/analyse', formData)
 
     return result.data
   }

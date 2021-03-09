@@ -7,8 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @Getter
 @Setter
-public class ClassKeywordPair {
-    String cluster;
-    String keyword;
-    Long actuality;
+public class ClassActuality {
+    String className;
+    String actuality;
 }
