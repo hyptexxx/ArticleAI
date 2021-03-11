@@ -11,74 +11,7 @@
               | Выберите публикацию для анализа
             template(v-slot:append='')
               q-btn(round='' dense='' flat='' icon='add' @click.stop='')
-
-        q-step(:name='2' caption='не обязательно' title='Определение параметров YAKE' icon='assignment' style='min-height: 200px;')
-          .q-pa-md
-            q-input(v-if='files' v-model='articleFile.meta.language' label='language')
-            q-input(v-if='files' v-model='articleFile.meta.maxNgramSize' label='maxNgramSize')
-            q-input(v-if='files' v-model='articleFile.meta.deduplicationThresold' label='deduplication_thresold')
-            q-input(v-if='files' v-model='articleFile.meta.deduplicationAlgo' label='deduplication_algo')
-            q-input(v-if='files' v-model='articleFile.meta.windowSize' label='windowSize')
-            q-input(v-if='files' v-model='articleFile.meta.numberOfKeywords' label='numberOfKeywords')
-
-        q-step(:name='3' title='Определение ключевых слов' icon='create_new_folder' :done='step > 2' style='min-height: 200px;')
-          q-btn(color='green' :disable='loading' label='Добавить ключевое слово' @click='addRow')
-          q-item.q-item__label--header
-          q-table(
-            title='Ключевые слова'
-            :data='data.yakeResponse'
-            :separator='separator'
-            virtual-scroll
-            :columns='columns'
-            :loading="loading"
-            pagination.sync="pagination"
-            :rows-per-page-options="[0]"
-            row-key='ngram')
-            template(v-slot:header='props')
-              q-tr(:props='props')
-                q-th(auto-width='')
-                  | Удалить ключевое слово
-                q-th(v-for='col in props.cols' :key='col.name' :props='props')
-                  | {{ col.label }}
-            template(v-slot:body='props')
-              q-tr(:props='props')
-                q-td(auto-width='')
-                  q-btn(size='sm' color='red' dense='' @click='removeRow' class='remove-row-btn' :icon="'remove'")
-
-                q-td(key='ngram' :props='props')
-                  | {{ props.row.ngram }}
-                  q-popup-edit(v-model='props.row.ngram' title='Редактировать ключевое слово' buttons='')
-                    q-input(type='text' v-model='props.row.ngram' dense='' autofocus='')
-
-                q-td(key='score' :props='props')
-                  | {{ props.row.score }}
-                  q-popup-edit(v-model='props.row.score' title='Редактировать значение важности' buttons='')
-                    q-input(type='number' v-model='props.row.score' dense='' autofocus='')
-          q-separator
-          q-table(
-            title='Отфильтрованые ключевые слова'
-            :data='nlpResponse'
-            :separator='separator'
-            virtual-scroll
-            :columns='nlpResponseColumns'
-            :loading="loading"
-            pagination.sync="pagination"
-            :rows-per-page-options="[0]"
-            row-key='ngram',
-            v-if='isExperementalEnabled')
-        q-step(:name='4' title='Анализ актуальности' icon='assignment' style='min-height: 200px;')
-          q-table(
-            title='Класс-актуальность'
-            :data='classes'
-            :separator='separator'
-            virtual-scroll
-            :columns='classColumns'
-            :loading="loading"
-            pagination.sync="pagination"
-            :rows-per-page-options="[0]"
-            row-key='classId')
-
-        q-step(:name='5' title='Рекомендации' icon='add_comment' style='min-height: 200px;')
+        q-step(:name='2' title='Рекомендации' icon='add_comment' style='min-height: 200px;')
           .q-pa-md.row.items-start.q-gutter-md
             q-card.my-card.bg-indigo-7.text-white
               q-card-section
@@ -126,6 +59,25 @@
                   | Актуальность составляет {{this.recomendation.actuality}}%
                 q-chip(square='' v-else color='yellow' text-color='black' icon-right='star')
                   | Актуальность составляет {{this.recomendation.actuality}}%
+              q-card-section
+                q-table(
+                  title='Класс -> Актуальность'
+                  :data='this.recomendation.classesActuality'
+                  :separator='separator'
+                  virtual-scroll
+                  :columns='b'
+                  pagination.sync="pagination"
+                  :rows-per-page-options="[0]"
+                  row-key='name')
+                q-table(
+                  title='Ключевые слова -> Классы -> актуальность класса'
+                  :data='this.recomendation.classKeywordPairs'
+                  :separator='separator'
+                  virtual-scroll
+                  :columns='a'
+                  pagination.sync="pagination"
+                  :rows-per-page-options="[0]"
+                  row-key='keyword')
 
         template(v-slot:navigation='')
           q-stepper-navigation
@@ -135,12 +87,6 @@
           q-banner.bg-purple-8.text-white.q-px-lg(v-if='step === 1')
             | Загрузите публикацию
           q-banner.bg-orange-8.text-white.q-px-lg(v-else-if='step === 2')
-            | Определение параметров YAKE
-          q-banner.bg-cyan-8.text-white.q-px-lg(v-else-if='step === 3')
-            | Определение ключевых слов
-          q-banner.bg-green-8.text-white.q-px-lg(v-else-if='step === 4')
-            | Анализ актуальности
-          q-banner.bg-blue-8.text-white.q-px-lg(v-else='')
             | Рекомендации
 </template>
 
@@ -209,13 +155,23 @@ export default class ClassComponent extends Mixins(RequestService) {
       cluster: '',
       keyword: ''
     }],
+    classesActuality: [{
+      classActuality: 0,
+      embedding: '',
+      name: ''
+    }],
     keywordClassMax: ''
   }
 
-  nlpResponseColumns = [
-    { name: 'ngram', label: 'Ключевое слово', field: 'ngram', align: 'center', style: 'width: 10px' },
-    { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' },
-    { name: 'isGood', label: 'Превышение порога', field: 'isGood', align: 'center', style: 'width: 10px' }
+  a = [
+    { name: 'cluster', label: 'Класс', field: 'cluster', align: 'center', style: 'width: 10px' },
+    { name: 'keyword', label: 'Ключевая фраза', field: 'keyword', align: 'center', style: 'width: 10px' },
+    { name: 'actuality', label: 'Актаульность', field: 'actuality', align: 'center', style: 'width: 10px' }
+  ]
+
+  b = [
+    { name: 'name', label: 'Класс', field: 'name', align: 'center', style: 'width: 10px' },
+    { name: 'classActuality', label: 'Актуальность', field: 'classActuality', align: 'center', style: 'width: 10px' }
   ]
 
   private classColumns = [
@@ -260,24 +216,7 @@ export default class ClassComponent extends Mixins(RequestService) {
   private async nextHandler (): Promise<void> {
     this.loading = true
     switch (this.step) {
-      case 3:
-        break
-      case 4:
-        this.classes.splice(0, this.classes.length)
-        if (this.data.generatedArticleId) {
-          this.classes = await this.classesAnalyseRequest(this.data, this.data.generatedArticleId)
-          if (this.classes.length === 0) {
-            this.$q.notify({
-              color: 'warning',
-              message: 'Не удалось получить по актуальности',
-              icon: 'report_problem',
-              progress: true,
-              position: 'bottom'
-            })
-          }
-        }
-        break
-      case 5:
+      case 2:
         this.data.yakeResponse = this.data.yakeResponse.splice(0, this.data.yakeResponse.length)
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,  @typescript-eslint/no-unsafe-member-access
         this.nlpResponse = this.nlpResponse.splice(0, this.nlpResponse.length)
@@ -297,14 +236,6 @@ export default class ClassComponent extends Mixins(RequestService) {
                   position: 'bottom'
                 })
               }
-            } else {
-              this.$q.notify({
-                color: 'warning',
-                message: 'Не удалось получить данные по публикации',
-                icon: 'report_problem',
-                progress: true,
-                position: 'bottom'
-              })
             }
           }
         }

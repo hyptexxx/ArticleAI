@@ -15,4 +15,5 @@ public class Recomendation {
     List<ClassKeywordPair> classKeywordPairs;
     ClassKeywordPair classKeywordPairMax;
     ClassKeywordPair classKeywordPairMin;
+    List<KeywordClass> classesActuality;
 }

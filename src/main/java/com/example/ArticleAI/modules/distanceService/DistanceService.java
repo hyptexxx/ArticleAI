@@ -58,6 +58,7 @@ public class DistanceService {
                 .classKeywordPairMax(classKeywordPairs.stream()
                         .max(Comparator.comparing(ClassKeywordPair::getActuality))
                         .orElseThrow(NoSuchElementException::new))
+                .classesActuality(classesEmbeddings)
                 .build();
     }
 
