@@ -39,7 +39,7 @@ public class DistanceService {
         HttpEntity<?> entity = new HttpEntity(req_payload, headers);
 
         ResponseEntity<String> response = new RestTemplate()
-                .postForEntity("http://localhost:8081/api/v1/class/range", entity, String.class);
+                .postForEntity("http://10.10.1.28:8081/api/v1/class/range", entity, String.class);
 
         List<ClassDistance> classDistance = ClassDistanceMapper.parse(response.getBody()).get();
 
@@ -58,7 +58,9 @@ public class DistanceService {
                 .classKeywordPairMax(classKeywordPairs.stream()
                         .max(Comparator.comparing(ClassKeywordPair::getActuality))
                         .orElseThrow(NoSuchElementException::new))
-                .classesActuality(classesEmbeddings)
+                .classesActuality(classesEmbeddings.stream()
+                        .sorted(Comparator.comparing(KeywordClass::getClassActuality))
+                        .collect(Collectors.toList()))
                 .build();
     }
 
@@ -108,8 +110,8 @@ public class DistanceService {
                 .collect(Collectors.toList())));
 
         return withBigDecimal(actualities.stream()
-                .mapToDouble(Long::doubleValue)
                 .map(row -> (row * 100) / maxActuality.getClassActuality())
+                .mapToDouble(Long::doubleValue)
                 .average()
                 .orElseThrow(NoSuchElementException::new), 3);
     }

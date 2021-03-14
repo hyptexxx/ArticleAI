@@ -1,14 +1,14 @@
 <template lang="pug">
   q-page.row.items-center.justify-evenly
-    ClassComponent
+    Main
 </template>
 
 <script lang="ts">
 import { Vue, Component } from 'vue-property-decorator'
-import ClassComponent from 'components/ClassComponent.vue'
+import Main from 'components/Main.vue'
 
 @Component({
-  components: { ClassComponent }
+  components: { Main }
 })
 export default class PageIndex extends Vue {
 
