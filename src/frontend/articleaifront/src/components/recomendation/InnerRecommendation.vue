@@ -33,7 +33,7 @@
         .text-h6 Предполагаемые темы по ключевым словам текста статьи
         .text-subtitle2 Ключевые слова
       q-card-section
-        q-chip(square='' text-color='white' color='green' v-for="pair in this.recommendation.classKeywordPairs")
+        q-chip(square='' text-color='white' color='green' key='i' v-for="pair in this.recommendation.classKeywordPairs")
           | {{pair.cluster}}
       q-separator(dark='')
 
@@ -49,12 +49,12 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, PropSync, Vue } from 'vue-property-decorator'
 import { Recommendations } from 'src/models/Recommendation'
 
 @Component
 export default class InnerRecommendation extends Vue {
-  private recommendation: Recommendations = {
+  @PropSync('recommendation') sRecommendation: Recommendations = {
     actuality: 0,
     classKeywordPairMax: {
       actuality: 0,

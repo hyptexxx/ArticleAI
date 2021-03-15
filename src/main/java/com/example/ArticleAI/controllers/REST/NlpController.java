@@ -12,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -21,6 +23,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @RestController
+@SendTo("/topic/analyseSteps")
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NlpController {
 
@@ -28,6 +31,7 @@ public class NlpController {
     private final ClassesRepository classesRepository;
     private final DistanceService distanceService;
     private final SearchAPIService searchAPIService;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     @PostMapping(value = "/api/nlp/analyse")
     public ResponseEntity<Object> actualityAnalyse(@RequestParam("yakeData") String yakeData) throws ParseException {
@@ -36,7 +40,7 @@ public class NlpController {
                 .orElseThrow(() -> new ParseException("unparsable yake data", 0)));
 
         List<KeywordClass> classes = classesRepository.getAllClassesEmbeddings();
-
+        messagingTemplate.convertAndSend("/topic/analyseSteps", "5");
         classes = classes.stream()
                 .map(clazz -> KeywordClass.builder()
                         .classActuality(searchAPIService.getSearchCount(clazz.getName()))
@@ -44,7 +48,7 @@ public class NlpController {
                         .embedding(clazz.getEmbedding())
                         .build())
                 .collect(Collectors.toList());
-
+        messagingTemplate.convertAndSend("/topic/analyseSteps", "6");
         Recomendation distance = distanceService.getDistance(filteredYake.stream()
                 .filter(keyWord -> keyWord.getIsGood() == 1)
                 .map(NlpResponse::getNgram)

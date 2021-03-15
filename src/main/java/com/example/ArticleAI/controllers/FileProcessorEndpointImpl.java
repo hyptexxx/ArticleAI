@@ -19,7 +19,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.SimpMessageSendingOperations;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -32,6 +35,8 @@ import java.util.stream.Collectors;
 @Component
 @Slf4j
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
+@RestController
+@SendTo("/topic/analyseSteps")
 public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
     private final IPOIService poiService;
@@ -40,6 +45,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final IYakeService yakeService;
     private final YakeRepository yakeRepository;
     private final NlpFilterService nlpFilterService;
+    private final SimpMessageSendingOperations messagingTemplate;
 
     private final FileProcessor fileProcessor;
 
@@ -47,9 +53,9 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final Map<String, String> errorsToClient = new HashMap<>();
 
 
+    @SneakyThrows
     @Override
     public ResponseEntity<Object> processFiles(List<MultipartFile> files, ArticleYake articleYake) throws IOException, ParseException {
-
 //        return ResponseEntity.status(HttpStatus.OK).body(nlpFilterService.doFilter(yakeRepository.getAllNgram().stream()
 //                .map(ngram -> YakeResponse.builder()
 //                        .ngram(ngram)
@@ -77,7 +83,10 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                         Optional<Integer> generatedArticleIdOptional = yakeRepository.saveArticle(parsedArticle);
                         if (generatedArticleIdOptional.isPresent()) {
                             generatedArticleId = generatedArticleIdOptional.get();
-
+                            Thread.sleep(1000);
+                            messagingTemplate.convertAndSend("/topic/analyseSteps", "2");
+                            messagingTemplate.convertAndSend("/topic/analyseSteps", "3");
+                            messagingTemplate.convertAndSend("/topic/analyseSteps", "4");
                             return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
                                     .generatedArticleId(generatedArticleId)
                                     .yakeResponse(yakeService.parseYakeResponseJSON(requestService.sendRequest(parsedArticle)))

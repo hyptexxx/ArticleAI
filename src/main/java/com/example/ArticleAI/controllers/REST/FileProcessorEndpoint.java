@@ -3,6 +3,7 @@ package com.example.ArticleAI.controllers.REST;
 
 import com.example.ArticleAI.models.ArticleYake;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;

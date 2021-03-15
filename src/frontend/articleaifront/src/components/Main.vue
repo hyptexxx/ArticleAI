@@ -17,13 +17,13 @@
                 template(v-slot:append='')
                   q-btn(round='' dense='' flat='' icon='add' @click.stop='')
             q-card-section
-              q-btn.bg-indigo.text-white(flat='' label='Анализ' @click.stop='visible=true')
+              q-btn.bg-indigo.text-white(flat='' label='Анализ' @click.stop='setVisibleContent')
                 q-tooltip(content-class='bg-indigo' content-style="font-size: 16px" :offset='[10, 10]')
                   | Анализировать публикацию и получить рекомендации
             q-slide-transition
               div(v-show='visible')
                 q-separator(dark='' inset='')
-                Recommendation
+                Recommendation(v-if='visible && this.files' :files.sync='this.files')
 
 </template>
 
@@ -31,10 +31,7 @@
 import { Component, Mixins } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
-import AnalyseResponse, { YakeResponse } from 'src/models/AnalyseResponse'
 import { Class } from 'src/models/Class'
-import { Recommendations } from 'src/models/Recommendation'
-import { NlpResponse } from 'src/models/NlpResponse'
 import Recommendation from 'components/recomendation/Recommendation.vue'
 
 @Component({
@@ -45,51 +42,18 @@ import Recommendation from 'components/recomendation/Recommendation.vue'
 export default class Main extends Mixins(RequestService) {
   private visible = false
   private files: File[] | null = null
-  private separator = 'cell'
-  private pagination = { rowsPerPage: 0 }
-  private step = 1
-  nlpResponse: NlpResponse[] = []
 
-  private articleId: number | null = null
-  private columns = [{
-    name: 'ngram',
-    required: true,
-    label: 'Ключевое слово',
-    align: 'center'
-  },
-  { name: 'score', label: 'Значение важности', field: 'Значение важности', align: 'center', style: 'width: 10px' }]
-
-  original: AnalyseResponse[] = [{
-    yakeResponse: [{
-      ngram: '',
-      score: 0
-    }],
-    generatedArticleId: 0
-  }]
-
-  data: AnalyseResponse = {
-    yakeResponse: [{
-      ngram: '',
-      score: 0
-    }],
-    generatedArticleId: 0
-  }
-
-  recomendation: Recommendations = {
-    actuality: 0,
-    classKeywordPairMax: {
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    },
-    classKeywordPairMin: {
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    },
-    classKeywordPairs: [],
-    classesActuality: [],
-    keywordClassMax: ''
+  private setVisibleContent (): void {
+    if (this.files) {
+      this.visible = true
+    } else {
+      this.$q.notify({
+        icon: 'warning',
+        message: 'Загрузите публикацию.',
+        caption: 'Для продолжения - загрузите публикацию.',
+        color: 'primary'
+      })
+    }
   }
 
   a = [
@@ -120,54 +84,6 @@ export default class Main extends Mixins(RequestService) {
       windowSize: 1,
       numberOfKeywords: 10,
       text: ''
-    }
-  }
-
-  private removeRow (click: MouseEvent): void {
-    for (let i = 0; i < document.getElementsByClassName('remove-row-btn').length; i++) {
-      if (document.getElementsByClassName('remove-row-btn')[i] === click.currentTarget) {
-        this.data.yakeResponse.splice(i, 1)
-      }
-    }
-  }
-
-  private loading = false;
-
-  private addRow (): void {
-    this.loading = true
-    const index = this.data.yakeResponse.length + 1,
-      row = this.original
-    const addRow = { ...row }
-    this.data.yakeResponse = [...this.data.yakeResponse.slice(0, index), addRow, ...this.data.yakeResponse.slice(index)] as YakeResponse[]
-    this.loading = false
-  }
-
-  private async nextHandler (): Promise<void> {
-    this.loading = true
-    switch (this.step) {
-      case 2:
-        this.data.yakeResponse = this.data.yakeResponse.splice(0, this.data.yakeResponse.length)
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call,  @typescript-eslint/no-unsafe-member-access
-        this.nlpResponse = this.nlpResponse.splice(0, this.nlpResponse.length)
-        if (this.articleFile) {
-          this.articleFile.files = this.files
-          this.data = await this.sendAndAnalyse(this.articleFile)
-          if (this.data && this.data.yakeResponse.length) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-            this.recomendation = await this.sendToNlp(this.data.yakeResponse)
-          }
-        }
-        break
-    }
-    this.loading = false
-  }
-
-  private async saveResult (): Promise<void> {
-    if (this.data && this.articleFile) {
-      const articleId = await this.saveResultRequest(this.data, this.articleFile, this.classes)
-      if (articleId) {
-        this.articleId = articleId
-      }
     }
   }
 }
