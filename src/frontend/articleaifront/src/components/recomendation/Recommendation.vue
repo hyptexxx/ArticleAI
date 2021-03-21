@@ -125,7 +125,7 @@ export default class Recommendation extends Mixins(RequestService) {
     this.stompClient.connect({}, (frame: string) => {
       console.log('Connected: ' + frame)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-      this.stompClient.subscribe('/topic/analyseSteps', (messageOutput: IMessage) => {
+      this.stompClient.subscribe('/user/topic/analyseSteps', (messageOutput: IMessage) => {
         this.showMessageOutput(messageOutput.body)
       })
     })

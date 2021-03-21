@@ -3,7 +3,7 @@ package com.example.ArticleAI.modules.classesResolver;
 import com.example.ArticleAI.modules.classesResolver.exceptions.emptyKeywordListException.EmptyKeywordListException;
 import com.example.ArticleAI.modules.classesResolver.models.Class;
 import com.example.ArticleAI.modules.classesResolver.models.Keyword;
-import com.example.ArticleAI.modules.classesResolver.service.interfaces.IClassesResolverService;
+import com.example.ArticleAI.modules.classesResolver.service.ClassesResolverService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import org.apache.commons.collections4.ListUtils;
@@ -20,7 +20,7 @@ public class ClassesResolver {
     private List<String> keyWords;
     private Integer articleId;
 
-    private final IClassesResolverService classesResolverService;
+    private final ClassesResolverService classesResolverService;
 
     public List<Class> resolve() throws EmptyKeywordListException {
         List<Keyword> existingKeywordsList = classesResolverService.getExistingKeywordsList();

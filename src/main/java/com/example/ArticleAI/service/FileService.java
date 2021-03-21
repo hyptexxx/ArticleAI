@@ -1,16 +1,14 @@
-package com.example.ArticleAI.modules.trainModule;
+package com.example.ArticleAI.service;
 
-import com.example.ArticleAI.models.LoadedFile;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
-import java.util.Optional;
 
-@Slf4j
 @Service
-public class FileProcessor {
+public class FileService {
+
     /**
      * Path to resources/uploadFiles.
      */
@@ -20,55 +18,55 @@ public class FileProcessor {
             "resources" + File.separator +
             "uploadedFiles";
 
+    private static File importedFile;
+
 
     /**
      * @param file loaded file
      * @return true | false, if file was successfully saved.
      */
-    public Optional<LoadedFile> saveFilesToFilesystem(LoadedFile file) throws FileAlreadyExistsException {
+    public boolean saveFileToFilesystem(MultipartFile file) throws FileAlreadyExistsException {
         final File dir = new File(rootPath);
-        File savedFile;
         BufferedOutputStream stream;
         if (!dir.exists()) {
             dir.mkdirs();
         }
-        savedFile = new File(dir.getAbsolutePath() + File.separator
-                + file.getLoadedFile().getOriginalFilename());
-        if (savedFile.delete()) {
-            log.info("file deleted {}", savedFile.getPath());
-        }
-
-        log.info("saving file {}", savedFile.getPath());
-        if (!isFileExists(savedFile)) {
+        importedFile = new File(dir.getAbsolutePath() + File.separator + file.getOriginalFilename());
+        if (!isFileExists()) {
             try {
-                stream = new BufferedOutputStream(new FileOutputStream(savedFile));
+                stream = new BufferedOutputStream(new FileOutputStream(importedFile));
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
-                return Optional.empty();
+                return false;
             }
             try {
-                stream.write(file.getLoadedFile().getBytes());
+                stream.write(file.getBytes());
             } catch (IOException e) {
                 e.printStackTrace();
-                return Optional.empty();
+                return false;
             }
             try {
                 stream.close();
             } catch (IOException e) {
                 e.printStackTrace();
-                return Optional.empty();
+                return false;
             }
-            return Optional.ofNullable(LoadedFile.builder()
-                    .savedFile(savedFile)
-                    .type(file.getType())
-                    .build());
         } else {
             throw new FileAlreadyExistsException("File already exists");
             //todo сохранять стейт статьи при нужных результатов
         }
+        return importedFile.exists();
     }
 
-    private static boolean isFileExists(File file) {
-        return file.exists();
+
+    /**
+     * @return previously saved file
+     */
+    public File getFile() {
+        return importedFile;
+    }
+
+    private static boolean isFileExists() {
+        return importedFile.exists();
     }
 }

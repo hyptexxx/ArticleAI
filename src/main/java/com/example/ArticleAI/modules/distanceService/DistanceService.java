@@ -1,11 +1,10 @@
 package com.example.ArticleAI.modules.distanceService;
 
-import com.example.ArticleAI.mappers.ClassDistanceMapper;
 import com.example.ArticleAI.models.ClassDistance;
 import com.example.ArticleAI.models.ClassKeywordPair;
 import com.example.ArticleAI.models.KeywordClass;
 import com.example.ArticleAI.models.Recomendation;
-import com.example.ArticleAI.modules.actualityResolver.service.implementation.SearchAPIRequests.SearchAPIService;
+import com.example.ArticleAI.parser.ClassDistanceParser;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +23,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DistanceService {
-    private final SearchAPIService searchAPIService;
 
     @SneakyThrows
     public Recomendation getDistance(List<String> keywords,
@@ -41,7 +39,7 @@ public class DistanceService {
         ResponseEntity<String> response = new RestTemplate()
                 .postForEntity("http://10.10.1.28:8081/api/v1/class/range", entity, String.class);
 
-        List<ClassDistance> classDistance = ClassDistanceMapper.parse(response.getBody()).get();
+        List<ClassDistance> classDistance = ClassDistanceParser.parse(response.getBody()).get();
 
         List<ClassKeywordPair> classKeywordPairs
                 = getClassKeywordPair(getClassesForKeywords(keywords, classDistance), classesEmbeddings);

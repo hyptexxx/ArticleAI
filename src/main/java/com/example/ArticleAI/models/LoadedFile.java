@@ -1,6 +1,6 @@
 package com.example.ArticleAI.models;
 
-import com.example.ArticleAI.configurations.AllowedContentTypes;
+import com.example.ArticleAI.configurations.filter.AllowedContentTypes;
 import lombok.Builder;
 import lombok.Value;
 import org.springframework.web.multipart.MultipartFile;
