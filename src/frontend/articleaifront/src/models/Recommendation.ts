@@ -5,7 +5,7 @@ export interface Recommendations {
   classesActuality: KeywordClass[];
   classKeywordPairMin: ClassKeywordPair;
   classKeywordPairMax: ClassKeywordPair;
-  nlpPayload: NlpPayload[]
+  payload: NlpPayload[]
 }
 
 export interface ClassKeywordPair{

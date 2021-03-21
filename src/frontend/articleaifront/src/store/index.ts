@@ -1,5 +1,6 @@
 import { store } from 'quasar/wrappers'
 import Vuex from 'vuex'
+import RecommendationModule from 'src/store/modules/RecommendationModule'
 
 // import example from './module-example';
 // import { ExampleStateInterface } from './module-example/state';
@@ -21,12 +22,12 @@ export default store(function ({ Vue }) {
 
   const Store = new Vuex.Store<StateInterface>({
     modules: {
-      // example
+      RecommendationModule
     },
 
     // enable strict mode (adds overhead!)
     // for dev mode only
-    strict: !!process.env.DEV
+    strict: !!process.env.DEBUGGING
   })
 
   return Store

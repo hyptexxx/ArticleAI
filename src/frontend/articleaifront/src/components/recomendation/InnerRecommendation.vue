@@ -10,7 +10,7 @@
       q-card-section
         .text-subtitle2 Не вносите в текст следующие ключевые слова:
         q-chip(square='' text-color='white' color='red' icon-right='remove')
-          | {{this.recommendation.classKeywordPairMin.keyword}}
+          | {{this.srecommendation.classKeywordPairMin.keyword}}
       q-separator(inset='')
       q-card-actions
         q-btn.bg-green.text-white Принять
@@ -22,7 +22,7 @@
         .text-subtitle2 Ключевые слова
       q-card-section
         q-chip(square='' text-color='white' color='green' icon-right='add')
-          | {{this.recommendation.classKeywordPairMax.keyword}}
+          | {{this.srecommendation.classKeywordPairMax.keyword}}
       q-separator(inset='')
       q-card-actions
         q-btn.bg-green.text-white Принять
@@ -33,7 +33,7 @@
         .text-h6 Предполагаемые темы по ключевым словам текста статьи
         .text-subtitle2 Ключевые слова
       q-card-section
-        q-chip(square='' text-color='white' color='green' key='i' v-for="pair in this.recommendation.classKeywordPairs")
+        q-chip(square='' text-color='white' color='green' key='i' v-for="pair in this.srecommendation.classKeywordPairs")
           | {{pair.cluster}}
       q-separator(dark='')
 
@@ -42,20 +42,21 @@
         .text-h6 Общая статистика
         .text-subtitle2 Результаты анализа
       q-card-section
-        q-chip(square='' v-if="this.recommendation.actuality > 50" color='green' text-color='white' icon-right='star')
-          | Актуальность составляет {{this.recommendation.actuality}}%
+        q-chip(square='' v-if="this.srecommendation.actuality > 50" color='green' text-color='white' icon-right='star')
+          | Актуальность составляет {{this.srecommendation.actuality}}%
         q-chip(square='' v-else color='yellow' text-color='black' icon-right='star')
-          | Актуальность составляет {{this.recommendation.actuality}}%
+          | Актуальность составляет {{this.srecommendation.actuality}}%
 </template>
 
 <script lang="ts">
-import { Component, PropSync, Vue } from 'vue-property-decorator'
+import { Component, Mixins, Watch } from 'vue-property-decorator'
 import { Recommendations } from 'src/models/Recommendation'
+import RecommendationStore from 'src/store/RecommendationStore'
 
 @Component
-export default class InnerRecommendation extends Vue {
-  @PropSync('recommendation') sRecommendation: Recommendations = {
-    nlpPayload: [],
+export default class InnerRecommendation extends Mixins(RecommendationStore) {
+  private srecommendation: Recommendations = {
+    payload: [],
     actuality: 0,
     classKeywordPairMax: {
       actuality: 0,
@@ -70,6 +71,11 @@ export default class InnerRecommendation extends Vue {
     classKeywordPairs: [],
     classesActuality: [],
     keywordClassMax: ''
+  }
+
+  @Watch('recommendations')
+  recommendationWatcher (): void {
+    this.srecommendation = this.recommendations
   }
 }
 </script>

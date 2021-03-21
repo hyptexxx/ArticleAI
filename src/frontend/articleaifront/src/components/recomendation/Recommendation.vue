@@ -1,6 +1,5 @@
 <template lang="pug">
   div
-    RecommendationSettings(:dialog.sync='dialog' :recommendation.sync='recomendation')
     q-stepper(v-model='step' ref='stepper'
       done-color='green'
       active-color='purple'
@@ -19,7 +18,7 @@
           | Подгатавливаем текст публикации для более точного анализа...
         q-banner.bg-indigo.text-white.q-px-lg(v-else-if='step === 3')
           | Анализируем текст публикации...
-        q-banner.bg-indigo.text-white.q-px-lg(v-if='step === 4')
+        q-banner.bg-indigo.text-white.q-px-lg(v-else-if='step === 4')
           | Фильтруем результаты анализа...
         q-banner.bg-indigo.text-white.q-px-lg(v-else-if='step === 5')
           | Формируем рекомендации, для повышения актуальности публикации...
@@ -27,7 +26,7 @@
           | Готово!
           | Просмотрите рекоммендации, оцените их точность и полезность.
     q-card-section
-      q-btn(icon='settings' round='' style='float:right' @click='dialog = true')
+      q-btn(icon='settings' round='' style='float:right' v-if='step === 6' @click='dialog = true')
       .text-h6.text-black {{currentStatusText}}
       .text-subtitle2.text-black {{currentStatusTextDescription}}
       div.q-gutter-md.row
@@ -43,7 +42,8 @@
             q-card-actions.q-gutter-md(align='right')
               q-skeleton(type='QBtn')
               q-skeleton(type='QBtn')
-        InnerRecommendation(v-if='step === 6' :recommendation.sync='recomendation')
+        InnerRecommendation(v-if='step === 6')
+        RecommendationSettings(v-if='step === 6' :dialog.sync='dialog')
 </template>
 
 <script lang="ts">
@@ -58,6 +58,7 @@ import AnalyseResponse from 'src/models/AnalyseResponse'
 import RequestService from 'src/services/implementation/RequestService'
 import { Recommendations } from 'src/models/Recommendation'
 import { QStepper } from 'quasar'
+import RecommendationStore from 'src/store/RecommendationStore'
 
 @Component({
   components: {
@@ -65,7 +66,7 @@ import { QStepper } from 'quasar'
     RecommendationSettings
   }
 })
-export default class Recommendation extends Mixins(RequestService) {
+export default class Recommendation extends Mixins(RequestService, RecommendationStore) {
   @PropSync('files') sFiles!: File[]
   private currentStatusText = 'Анализ публикации...'
   private currentStatusTextDescription = 'Пожалуйста дождитесь окончания анализа вашей публикации.'
@@ -95,7 +96,7 @@ export default class Recommendation extends Mixins(RequestService) {
   }
 
   recomendation: Recommendations = {
-    nlpPayload: [],
+    payload: [],
     actuality: 0,
     classKeywordPairMax: {
       actuality: 0,
@@ -142,6 +143,7 @@ export default class Recommendation extends Mixins(RequestService) {
       if (this.data && this.data.yakeResponse.length) {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
         this.recomendation = await this.sendToNlp(this.data.yakeResponse)
+        this.setRecommendation(this.recomendation)
       }
     }
   }

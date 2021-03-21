@@ -31,6 +31,6 @@ import Account from 'components/account/Account.vue'
 })
 export default class MainLayout extends Vue {
   leftDrawerOpen = true;
-  productVersion = 'v3.0.2 alpha.'
+  productVersion = 'v3.0.3 alpha.'
 }
 </script>
