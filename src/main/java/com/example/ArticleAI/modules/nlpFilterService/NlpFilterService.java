@@ -10,6 +10,7 @@ import com.example.ArticleAI.parser.NlpFilterParser;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -20,6 +21,9 @@ import java.util.concurrent.TimeUnit;
 @Slf4j
 @Service
 public class NlpFilterService {
+    @Value("${module.url}")
+    private String moduleUrl;
+
     public List<NlpResponse> doFilter(List<YakeResponse> yakeResponse) throws ParseException, NlpResponseBadRequestException {
         OkHttpClient client;
         OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -33,7 +37,7 @@ public class NlpFilterService {
         final RequestBody body = RequestBody
                 .create(new Gson().toJson(yakeResponse), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("http://localhost:8081/api/v1/analyse") //todo url to params file
+                .url("http://" + moduleUrl + ":8081/api/v1/analyse")
                 .post(body)
                 .build();
         try {

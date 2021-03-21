@@ -4,6 +4,7 @@ import com.example.ArticleAI.models.ArticleYake;
 import com.google.gson.Gson;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -12,6 +13,8 @@ import java.util.concurrent.TimeUnit;
 @Service
 @Slf4j
 public class RequestService {
+    @Value("${module.url}")
+    private String moduleUrl;
 
     public String sendRequest(ArticleYake articleYake) {
         OkHttpClient client;
@@ -19,12 +22,12 @@ public class RequestService {
         builder.connectTimeout(60, TimeUnit.SECONDS);
         builder.readTimeout(60, TimeUnit.SECONDS);
         builder.writeTimeout(60, TimeUnit.SECONDS);
-        client  = builder.build();
+        client = builder.build();
         Response response = null;
         String responseBody = null;
         final RequestBody body = RequestBody.create(new Gson().toJson(articleYake), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("http://10.10.1.28:5000/yake/")
+                .url("http://" + moduleUrl + ":5000/yake/")
                 .post(body)
                 .build();
         try {
