@@ -33,7 +33,7 @@ public class NlpFilterService {
         final RequestBody body = RequestBody
                 .create(new Gson().toJson(yakeResponse), MediaType.parse("application/json; charset=utf-8"));
         final Request request = new Request.Builder()
-                .url("http://10.10.1.28:8081/api/v1/analyse")
+                .url("http://localhost:8081/api/v1/analyse") //todo url to params file
                 .post(body)
                 .build();
         try {

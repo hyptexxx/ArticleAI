@@ -29,6 +29,15 @@
           pagination.sync="pagination"
           :rows-per-page-options="[0]"
           row-key='keyword')
+        q-table(
+          title='Ключевые слова -> Классы -> актуальность класса'
+          :data='this.sRecommendation.nlpPayload'
+          :separator='separator'
+          virtual-scroll
+          :columns='nlpPayloadColumns'
+          pagination.sync="pagination"
+          :rows-per-page-options="[0]"
+          row-key='ngram')
 </template>
 
 <script lang="ts">
@@ -40,6 +49,7 @@ export default class RecommendationSettings extends Vue {
   @PropSync('dialog', { type: Boolean }) sDialog!: boolean
   @PropSync('recommendation') sRecommendation: Recommendations = {
     actuality: 0,
+    nlpPayload: [],
     classKeywordPairMax: {
       actuality: 0,
       cluster: '',
@@ -60,7 +70,7 @@ export default class RecommendationSettings extends Vue {
     console.log(this.sRecommendation)
   }
 
-  private maximizedToggle = false
+  private maximizedToggle = true
 
   a = [
     { name: 'cluster', label: 'Класс', field: 'cluster', align: 'center', style: 'width: 10px' },
@@ -71,6 +81,13 @@ export default class RecommendationSettings extends Vue {
   b = [
     { name: 'name', label: 'Класс', field: 'name', align: 'center', style: 'width: 10px' },
     { name: 'classActuality', label: 'Актуальность', field: 'classActuality', align: 'center', style: 'width: 10px' }
+  ]
+
+  nlpPayloadColumns = [
+    { name: 'ngram', label: 'Ключевая фраза', field: 'ngram', align: 'center', style: 'width: 10px' },
+    { name: 'avg', label: 'Среднее', field: 'avg', align: 'center', style: 'width: 10px' },
+    { name: 'value', label: 'Значение важности', field: 'value', align: 'center', style: 'width: 10px' },
+    { name: 'isGood', label: 'Прошёл фильтр', field: 'isGood', align: 'center', style: 'width: 10px' }
   ]
 }
 

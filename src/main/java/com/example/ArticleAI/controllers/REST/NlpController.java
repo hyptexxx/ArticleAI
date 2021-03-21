@@ -54,15 +54,15 @@ public class NlpController {
 
         messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "6");
 
-        Recomendation distance = distanceService.getDistance(filteredYake.stream()
+        Recomendation recomendation = distanceService.getDistance(filteredYake.stream()
                 .filter(keyWord -> keyWord.getIsGood() == 1)
                 .map(NlpResponse::getNgram)
-                .collect(Collectors.toList()), classes);
+                .collect(Collectors.toList()), classes, filteredYake);
 
         if (filteredYake.isEmpty()) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
 
-        return ResponseEntity.status(HttpStatus.OK).body(distance);
+        return ResponseEntity.status(HttpStatus.OK).body(recomendation);
     }
 }

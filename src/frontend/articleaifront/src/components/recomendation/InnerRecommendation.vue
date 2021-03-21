@@ -55,6 +55,7 @@ import { Recommendations } from 'src/models/Recommendation'
 @Component
 export default class InnerRecommendation extends Vue {
   @PropSync('recommendation') sRecommendation: Recommendations = {
+    nlpPayload: [],
     actuality: 0,
     classKeywordPairMax: {
       actuality: 0,

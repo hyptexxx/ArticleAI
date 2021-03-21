@@ -21,6 +21,7 @@ public class NlpFilterParser {
                                 .ngram(jsonArray.getJSONObject(i).getString("ngram"))
                                 .value(jsonArray.getJSONObject(i).getDouble("value"))
                                 .isGood(jsonArray.getJSONObject(i).getInt("isGood"))
+                                .avg(jsonArray.getJSONObject(i).getDouble("avg"))
                                 .build()
                 );
             }

@@ -95,6 +95,7 @@ export default class Recommendation extends Mixins(RequestService) {
   }
 
   recomendation: Recommendations = {
+    nlpPayload: [],
     actuality: 0,
     classKeywordPairMax: {
       actuality: 0,

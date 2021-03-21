@@ -16,4 +16,5 @@ public class Recomendation {
     ClassKeywordPair classKeywordPairMax;
     ClassKeywordPair classKeywordPairMin;
     List<KeywordClass> classesActuality;
+    List<NlpResponse> payload;
 }

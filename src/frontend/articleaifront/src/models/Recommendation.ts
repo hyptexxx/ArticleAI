@@ -5,6 +5,7 @@ export interface Recommendations {
   classesActuality: KeywordClass[];
   classKeywordPairMin: ClassKeywordPair;
   classKeywordPairMax: ClassKeywordPair;
+  nlpPayload: NlpPayload[]
 }
 
 export interface ClassKeywordPair{
@@ -17,4 +18,10 @@ export interface KeywordClass{
   name: string
   embedding: string
   classActuality: number
+}
+export interface NlpPayload{
+  avg: number
+  isGood: number
+  ngram: string
+  value: number
 }

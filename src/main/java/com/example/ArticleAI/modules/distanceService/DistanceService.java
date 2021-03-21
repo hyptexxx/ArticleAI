@@ -1,9 +1,6 @@
 package com.example.ArticleAI.modules.distanceService;
 
-import com.example.ArticleAI.models.ClassDistance;
-import com.example.ArticleAI.models.ClassKeywordPair;
-import com.example.ArticleAI.models.KeywordClass;
-import com.example.ArticleAI.models.Recomendation;
+import com.example.ArticleAI.models.*;
 import com.example.ArticleAI.parser.ClassDistanceParser;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -26,7 +23,8 @@ public class DistanceService {
 
     @SneakyThrows
     public Recomendation getDistance(List<String> keywords,
-                                     List<KeywordClass> classesEmbeddings) {
+                                     List<KeywordClass> classesEmbeddings,
+                                     List<NlpResponse> payload) {
         Map<String, Object> req_payload = new HashMap<>();
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
@@ -59,6 +57,7 @@ public class DistanceService {
                 .classesActuality(classesEmbeddings.stream()
                         .sorted(Comparator.comparing(KeywordClass::getClassActuality))
                         .collect(Collectors.toList()))
+                .payload(payload)
                 .build();
     }
 

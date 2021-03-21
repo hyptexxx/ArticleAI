@@ -11,4 +11,5 @@ public class NlpResponse {
     String ngram;
     double value;
     int isGood;
+    double avg;
 }
