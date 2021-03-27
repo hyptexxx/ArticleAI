@@ -16,6 +16,7 @@ public class ClassesResolverService extends ClassesResolverDBService {
 
     public boolean isKeywordExistsInExistingClassesList(String keyword, List<Keyword> existingKeywordsList) {
         return existingKeywordsList.stream()
+
                 .anyMatch(keywordInSearch -> keywordInSearch.getKeywordText().equals(keyword));
     }
 }
