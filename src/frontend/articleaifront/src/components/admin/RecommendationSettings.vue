@@ -88,7 +88,6 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
   @Watch('recommendations')
   recommendationWatcher (): void {
     this.srecommendation = this.recommendations
-    console.log(this.srecommendation)
   }
 
   private maximizedToggle = true

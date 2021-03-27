@@ -123,7 +123,7 @@ export default class Recommendation extends Mixins(RequestService, Recommendatio
 
   private created (): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-return
-    this.stompClient = Stomp.over(() => new SockJS('/steps'))
+    this.stompClient = Stomp.over(() => new SockJS('http://localhost:8080/steps'))
     this.stompClient.connect({}, (frame: string) => {
       console.log('Connected: ' + frame)
       // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
