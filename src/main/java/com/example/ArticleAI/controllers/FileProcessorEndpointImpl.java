@@ -61,7 +61,6 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                 messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "2");
                 messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "3");
                 messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "4");
-
                 return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
                         .generatedArticleId(generatedArticleId)
                         .yakeResponse(YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
@@ -115,8 +114,6 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         return result;
     }
 }
-
-
 
 
 

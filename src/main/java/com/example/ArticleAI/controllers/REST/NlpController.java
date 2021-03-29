@@ -42,7 +42,7 @@ public class NlpController {
         List<KeywordClass> classes = classesRepository.getAllClassesEmbeddings();
 
         messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "5");
-
+jkl
         classes = classes.stream()
                 .map(clazz -> KeywordClass.builder()
                         .classActuality(classesRepository.getActualityByClassName(clazz.getName())
