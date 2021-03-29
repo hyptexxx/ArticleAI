@@ -43,6 +43,7 @@ public class NlpController {
 
         messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "5");
 jkl
+        123
         classes = classes.stream()
                 .map(clazz -> KeywordClass.builder()
                         .classActuality(classesRepository.getActualityByClassName(clazz.getName())
