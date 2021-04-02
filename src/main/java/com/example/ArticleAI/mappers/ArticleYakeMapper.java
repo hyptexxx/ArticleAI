@@ -1,11 +1,12 @@
 package com.example.ArticleAI.mappers;
 
 import com.example.ArticleAI.models.ArticleYake;
+import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class ArticleYakeMapper implements org.springframework.jdbc.core.RowMapper<ArticleYake> {
+public class ArticleYakeMapper implements RowMapper<ArticleYake> {
     @Override
     public ArticleYake mapRow(ResultSet rs, int rowNum) throws SQLException {
         return ArticleYake.builder()

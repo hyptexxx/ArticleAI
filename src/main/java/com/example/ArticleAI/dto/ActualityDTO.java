@@ -10,5 +10,4 @@ import lombok.*;
 public class ActualityDTO {
     private String className;
     private Long actuality;
-    private String keywordText;
 }

@@ -1,11 +1,12 @@
 import { Vue, Component } from 'vue-property-decorator'
 import RequestServiceInterface from '../../services/interface/RequestServiceInterface'
-import AnalyseResponse from '../../models/AnalyseResponse'
+import AnalyseResponse, { YakeResponse } from '../../models/AnalyseResponse'
 import ArticleFile from '../../models/ArticleFile/ArticleFile'
 import ArticleFileMeta from '../../models/ArticleFile/ArticleFileMeta'
 import { FullArticle } from '../../models/FullArticle'
 import { Class } from '../../models/Class'
 import { ClassActuality } from 'src/models/ClassActuality'
+import { Recommendations } from 'src/models/Recommendation'
 
 @Component
 export default class RequestService extends Vue implements RequestServiceInterface {
@@ -23,8 +24,15 @@ export default class RequestService extends Vue implements RequestServiceInterfa
     formData.append('analyseResponse', JSON.stringify(analyseResponse.yakeResponse))
     formData.append('articleId', articleId.toString())
     const result = await this.$axios.post<Class[]>('/api/classes/analyse', formData)
-    if (!result.data) {
-    }
+    return result.data
+  }
+
+  async sendToNlp (data: YakeResponse[]): Promise<Recommendations> {
+    const formData: FormData = new FormData()
+    formData.append('yakeData', JSON.stringify(data))
+
+    const result = await this.$axios.post<Recommendations>('/api/nlp/analyse', formData)
+
     return result.data
   }
 
