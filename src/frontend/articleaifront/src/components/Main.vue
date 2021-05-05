@@ -19,9 +19,10 @@
                 template(v-slot:append='')
                   q-btn(round='' dense='' flat='' icon='add' @click.stop='')
             q-card-section
-              q-btn.bg-indigo.text-white(flat='' label='Анализ' @click.stop='setVisibleContent')
+              q-btn.bg-indigo.text-white(flat='' label='Анализ' @click.stop='setVisibleContent' v-if="!srecommendation")
                 q-tooltip(content-class='bg-indigo' content-style="font-size: 16px" :offset='[10, 10]')
                   | Анализировать публикацию и получить рекомендации
+              q-btn.bg-green.text-white(flat='' label='Загрузить ещё' @click.stop='doReload' v-if="srecommendation" style="margin-left: 10px")
             q-slide-transition
               div(v-show='visible')
                 q-separator(dark='' inset='')
@@ -37,6 +38,8 @@ import { Class } from 'src/models/Class'
 import Recommendation from 'components/recomendation/Recommendation.vue'
 import LoginStore from 'src/store/LoginStore'
 import LoginForm from 'components/account/LoginForm.vue'
+import { Recommendations } from 'src/models/Recommendation'
+import RecommendationStore from 'src/store/RecommendationStore'
 
 @Component({
   components: {
@@ -44,10 +47,17 @@ import LoginForm from 'components/account/LoginForm.vue'
     LoginForm
   }
 })
-export default class Main extends Mixins(RequestService, LoginStore) {
+export default class Main extends Mixins(RequestService, LoginStore, RecommendationStore) {
   private visible = false
   private files: File[] | null = null
   private isLoginVisible = false
+
+  private srecommendation: Recommendations | null = null
+
+  @Watch('recommendations')
+  recommendationWatcher (): void {
+    this.srecommendation = this.recommendations
+  }
 
   @Watch('windowVisible')
   private void (): void {
@@ -100,6 +110,10 @@ export default class Main extends Mixins(RequestService, LoginStore) {
       numberOfKeywords: 20,
       text: ''
     }
+  }
+
+  private doReload (): void {
+    this.$router.go(0)
   }
 }
 </script>

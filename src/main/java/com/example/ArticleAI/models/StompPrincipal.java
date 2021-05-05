@@ -6,7 +6,6 @@ public class StompPrincipal implements Principal {
     private String name;
 
     public StompPrincipal(String name) {
-        System.out.println(name);
         this.name = name;
     }
 

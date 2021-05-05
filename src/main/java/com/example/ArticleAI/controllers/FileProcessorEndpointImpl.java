@@ -72,29 +72,29 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                                                ArticleYake articleYake) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         if (!file.isEmpty()) {
-            try {
-                Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
-                        .orElseThrow(IllegalAccessError::new)
-                        .getLoadedFile());
+            Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
+                    .orElseThrow(IllegalAccessError::new)
+                    .getLoadedFile());
 
-                ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
-                yakeRepository.saveArticle(parsedArticle);
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 1);
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 2);
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 4);
+            ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
+            yakeRepository.saveArticle(parsedArticle);
+            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 1);
+            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 2);
+            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
+            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 4);
 
-                Recomendation recomendation = nlpControllerService.actualityAnalyse(
-                        YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
-                                .orElseThrow(IllegalArgumentException::new)
-                );
-                return ResponseEntity.status(HttpStatus.OK).body(recomendation);
+            Recomendation recomendation = nlpControllerService.actualityAnalyse(
+                    YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
+                            .orElseThrow(IllegalArgumentException::new)
+            );
 
-            } catch (FileAlreadyExistsException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-            }
+
+            log.info("Получил рекомендации: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+            return ResponseEntity.status(HttpStatus.OK).body(recomendation);
+
         }
 
+        log.error("Не удалось сформировать рекомендации: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
     }
 
@@ -122,6 +122,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
             header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
 
+            log.info("{} Получил сертификат: {}", userId, transliterate(file.getName()));
             return ResponseEntity.ok()
                     .headers(header)
                     .contentLength(file.length())
@@ -129,6 +130,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                     .body(resource);
         }
 
+        log.error("Не удалось выдать сертификат: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         return ResponseEntity.badRequest()
                 .build();
     }
@@ -142,7 +144,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         final HttpHeaders header = new HttpHeaders();
 
         header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
-
+        log.info("{} выгрузил файл: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
         return ResponseEntity.ok()
                 .headers(header)
                 .contentLength(file.length())
@@ -156,6 +158,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         if (StringUtils.isNumeric(userId)) {
             final List<FileHistoryDto> fileHistories = fileRepository.getFilesHistoryByUserId(Integer.valueOf(userId));
 
+            log.info("{} Получил историю загрузок", userId);
             return ResponseEntity.status(HttpStatus.OK).body(fileHistories);
         }
         return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
@@ -183,6 +186,7 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
         header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
 
+        log.info("{} выгрузил файл: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
         return ResponseEntity.ok()
                 .headers(header)
                 .contentLength(file.length())
@@ -209,6 +213,8 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                             .build());
             }
         }
+
+        log.info("{} недопустимый тип файла: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), file.getName());
         return Optional.empty();
     }
 

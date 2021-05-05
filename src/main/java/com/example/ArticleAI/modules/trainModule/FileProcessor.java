@@ -51,43 +51,40 @@ public class FileProcessor {
         }
 
         log.info("saving file {}", savedFile.getPath());
-        if (!isFileExists(savedFile)) {
-            try {
-                stream = new BufferedOutputStream(new FileOutputStream(savedFile));
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
-            try {
-                stream.write(file.getLoadedFile().getBytes());
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
-            try {
-                stream.close();
-            } catch (IOException e) {
-                e.printStackTrace();
-                return Optional.empty();
-            }
 
-            if (StringUtils.isNumeric(userId)) {
-                try {
-                    fileRepository.save(savedFile.getAbsolutePath(), Integer.valueOf(userId));
-                } catch (SQLIntegrityConstraintViolationException throwables) {
-                    log.info("file db row is already exists userId: {}, row: {} ",
-                            Integer.valueOf(userId), savedFile.getAbsolutePath());
-                }
-            }
-
-            return Optional.ofNullable(LoadedFile.builder()
-                    .savedFile(savedFile)
-                    .type(file.getType())
-                    .build());
-        } else {
-            throw new FileAlreadyExistsException("File already exists");
-            //todo сохранять стейт статьи при нужных результатов
+        try {
+            stream = new BufferedOutputStream(new FileOutputStream(savedFile));
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+            return Optional.empty();
         }
+        try {
+            stream.write(file.getLoadedFile().getBytes());
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+        try {
+            stream.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+
+        if (StringUtils.isNumeric(userId)) {
+            try {
+                fileRepository.save(savedFile.getAbsolutePath(), Integer.valueOf(userId));
+            } catch (SQLIntegrityConstraintViolationException throwables) {
+                log.info("file db row is already exists userId: {}, row: {} ",
+                        Integer.valueOf(userId), savedFile.getAbsolutePath());
+            }
+        }
+
+        return Optional.ofNullable(LoadedFile.builder()
+                .savedFile(savedFile)
+                .type(file.getType())
+                .build());
+
     }
 
     private static boolean isFileExists(File file) {
