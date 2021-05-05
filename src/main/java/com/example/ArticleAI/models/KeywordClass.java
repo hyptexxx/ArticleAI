@@ -10,5 +10,5 @@ import lombok.*;
 public class KeywordClass {
     String name;
     String embedding;
-    Long classActuality;
+    Double classActuality;
 }

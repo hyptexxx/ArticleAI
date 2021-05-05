@@ -1,5 +1,7 @@
 <template lang="pug">
   q-page.flex.bg-white(style="width: 100%; height: 100%")
+    q-dialog(v-model="isLoginVisible" @hide='hideLoginForm')
+      login-form
     q-card.bg-white.my-card.text-black(dark='' bordered='' style="width: 100%")
       q-card-section
         q-separator(dark='' inset='')
@@ -28,20 +30,33 @@
 </template>
 
 <script lang="ts">
-import { Component, Mixins } from 'vue-property-decorator'
+import { Component, Mixins, Watch } from 'vue-property-decorator'
 import RequestService from 'src/services/implementation/RequestService'
 import ArticleFile from 'src/models/ArticleFile/ArticleFile'
 import { Class } from 'src/models/Class'
 import Recommendation from 'components/recomendation/Recommendation.vue'
+import LoginStore from 'src/store/LoginStore'
+import LoginForm from 'components/account/LoginForm.vue'
 
 @Component({
   components: {
-    Recommendation
+    Recommendation,
+    LoginForm
   }
 })
-export default class Main extends Mixins(RequestService) {
+export default class Main extends Mixins(RequestService, LoginStore) {
   private visible = false
   private files: File[] | null = null
+  private isLoginVisible = false
+
+  @Watch('windowVisible')
+  private void (): void {
+    this.isLoginVisible = this.windowVisible
+  }
+
+  private hideLoginForm (): void {
+    this.setVisible(false)
+  }
 
   private setVisibleContent (): void {
     if (this.files) {
@@ -82,7 +97,7 @@ export default class Main extends Mixins(RequestService) {
       deduplicationThresold: 1,
       deduplicationAlgo: 'leve',
       windowSize: 1,
-      numberOfKeywords: 10,
+      numberOfKeywords: 20,
       text: ''
     }
   }

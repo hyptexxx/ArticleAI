@@ -7,14 +7,18 @@
           q-card
             q-card-section
               .text-h6.text-black Описание
-              .text-subtitle2.text-black Пример описания
+              .text-subtitle2.text-black Данная разработка призвана помочь вам в определении степени актуальности теста вашей публикации.
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator'
+import { Component, Mixins } from 'vue-property-decorator'
+import SocketInitializer from 'boot/socket'
+import SocketStore from 'src/store/SocketStore'
 
 @Component
-export default class About extends Vue {
-
+export default class About extends Mixins(SocketInitializer, SocketStore) {
+  private mounted (): void {
+    this.connect()
+  }
 }
 </script>

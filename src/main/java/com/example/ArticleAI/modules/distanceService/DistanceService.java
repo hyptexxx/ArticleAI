@@ -2,8 +2,10 @@ package com.example.ArticleAI.modules.distanceService;
 
 import com.example.ArticleAI.models.*;
 import com.example.ArticleAI.parser.ClassDistanceParser;
+import com.example.ArticleAI.util.MathUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -17,6 +19,7 @@ import java.math.RoundingMode;
 import java.util.*;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class DistanceService {
@@ -38,7 +41,8 @@ public class DistanceService {
                 .postForEntity("http://10.10.1.28:8081/api/v1/class/range", entity, String.class);
 
         List<ClassDistance> classDistance = ClassDistanceParser.parse(response.getBody()).get();
-
+        normalizeAll(classDistance);
+        test(classesEmbeddings, classDistance);
         List<ClassKeywordPair> classKeywordPairs
                 = getClassKeywordPair(getClassesForKeywords(keywords, classDistance), classesEmbeddings);
 
@@ -49,11 +53,14 @@ public class DistanceService {
                 .keywordClassMax(getMaxActualityClass(classesEmbeddings).getName())
                 .classKeywordPairs(classKeywordPairs)
                 .classKeywordPairMin(classKeywordPairs.stream()
-                        .min(Comparator.comparing(ClassKeywordPair::getActuality))
-                        .orElseThrow(NoSuchElementException::new))
+                        .sorted(Comparator.comparing(ClassKeywordPair::getActuality))
+                        .limit(7)
+                        .collect(Collectors.toList()))
                 .classKeywordPairMax(classKeywordPairs.stream()
-                        .max(Comparator.comparing(ClassKeywordPair::getActuality))
-                        .orElseThrow(NoSuchElementException::new))
+                        .sorted(Comparator.comparing(ClassKeywordPair::getActuality)
+                                .reversed())
+                        .limit(7)
+                        .collect(Collectors.toList()))
                 .classesActuality(classesEmbeddings.stream()
                         .sorted(Comparator.comparing(KeywordClass::getClassActuality))
                         .collect(Collectors.toList()))
@@ -100,7 +107,7 @@ public class DistanceService {
     public double getActualityPercent(KeywordClass maxActuality,
                                       List<ClassKeywordPair> classKeywords,
                                       List<KeywordClass> classesEmbeddings) {
-        List<Long> actualities = new ArrayList<>();
+        List<Double> actualities = new ArrayList<>();
         classKeywords.forEach(className -> actualities.addAll(classesEmbeddings.stream()
                 .filter(clazz -> clazz.getName().equals(className.getCluster()))
                 .map(KeywordClass::getClassActuality)
@@ -108,7 +115,7 @@ public class DistanceService {
 
         return withBigDecimal(actualities.stream()
                 .map(row -> (row * 100) / maxActuality.getClassActuality())
-                .mapToDouble(Long::doubleValue)
+                .mapToDouble(Double::doubleValue)
                 .average()
                 .orElseThrow(NoSuchElementException::new), 3);
     }
@@ -117,5 +124,43 @@ public class DistanceService {
         BigDecimal bigDecimal = new BigDecimal(value);
         bigDecimal = bigDecimal.setScale(places, RoundingMode.HALF_UP);
         return bigDecimal.doubleValue();
+    }
+
+    private void normalizeAll(List<ClassDistance> searchResults) {
+        log.info("Normalizing results");
+        double[] normilized = MathUtil.stableSoftmax(searchResults.stream()
+                .mapToDouble(ClassDistance::getDistance)
+                .toArray());
+
+        for (int i = 0; i < searchResults.size(); i++) {
+            searchResults.get(i).setDistance(normilized[i]);
+        }
+    }
+
+
+    private void test(List<KeywordClass> keywordClasses, List<ClassDistance> classDistances) {
+        final List<KeywordClass> multi = new ArrayList<>();
+        List<ClassDistance> minus = classDistances.stream()
+                .map(classDistance -> ClassDistance.builder()
+                        .distance(1 - classDistance.getDistance())
+                        .className(classDistance.getClassName())
+                        .classActuality(classDistance.getClassActuality())
+                        .keyword(classDistance.getKeyword())
+                        .build())
+                .collect(Collectors.toList());
+
+        keywordClasses.forEach(keywordClass -> {
+            List<ClassDistance> temp = minus.stream()
+                    .filter(classDistance -> classDistance.getClassName().equals(keywordClass.getName()))
+                    .collect(Collectors.toList());
+
+            multi.addAll(temp.stream()
+                    .map(classDistance -> KeywordClass.builder()
+                            .name(keywordClass.getName())
+                            .embedding(keywordClass.getEmbedding())
+                            .classActuality(keywordClass.getClassActuality() * classDistance.getDistance())
+                            .build())
+                    .collect(Collectors.toList()));
+        });
     }
 }

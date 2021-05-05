@@ -1,6 +1,8 @@
 import { store } from 'quasar/wrappers'
 import Vuex from 'vuex'
 import RecommendationModule from 'src/store/modules/RecommendationModule'
+import SocketModule from 'src/store/modules/SocketModule'
+import LoginModule from 'src/store/modules/LoginStoreModule'
 
 // import example from './module-example';
 // import { ExampleStateInterface } from './module-example/state';
@@ -22,7 +24,9 @@ export default store(function ({ Vue }) {
 
   const Store = new Vuex.Store<StateInterface>({
     modules: {
-      RecommendationModule
+      RecommendationModule,
+      SocketModule,
+      LoginModule
     },
 
     // enable strict mode (adds overhead!)

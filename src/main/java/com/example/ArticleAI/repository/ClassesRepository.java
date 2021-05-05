@@ -1,5 +1,7 @@
 package com.example.ArticleAI.repository;
 
+import com.example.ArticleAI.dto.ClassDto;
+import com.example.ArticleAI.mappers.ClassDtoMapper;
 import com.example.ArticleAI.mappers.ClassEmbeddingMapper;
 import com.example.ArticleAI.models.ClassesEmbeddings;
 import com.example.ArticleAI.models.KeywordClass;
@@ -43,15 +45,12 @@ public class ClassesRepository {
 
     public int[] saveOrUpdate(List<ClassesEmbeddings> classesEmbeddings) {
         return jdbcTemplate
-                .batchUpdate("update classes_embeddings " +
-                        "set class_id = ?, embedding = ?, class_name = ?, actuality = ? where class_id = ?", new BatchPreparedStatementSetter() {
+
+                .batchUpdate("insert into class_actuality (id, actuality, class_id, date) values (0, ?, ?, current_date )", new BatchPreparedStatementSetter() {
                     @Override
                     public void setValues(PreparedStatement ps, int i) throws SQLException {
-                        ps.setInt(1, classesEmbeddings.get(i).getId());
-                        ps.setString(2, classesEmbeddings.get(i).getEmbedding());
-                        ps.setString(3, classesEmbeddings.get(i).getName());
-                        ps.setLong(4, classesEmbeddings.get(i).getActuality());
-                        ps.setInt(5, classesEmbeddings.get(i).getId());
+                        ps.setDouble(1, classesEmbeddings.get(i).getActuality());
+                        ps.setInt(2, classesEmbeddings.get(i).getId());
                     }
 
                     @Override
@@ -61,8 +60,15 @@ public class ClassesRepository {
                 });
     }
 
-    public Optional<Long> getActualityByClassName(String className) {
+    public Optional<Double> getActualityByClassName(String className) {
         return Optional.ofNullable(jdbcTemplate
-                .queryForObject("select actuality from classes_embeddings where class_name like ?", Long.class, className));
+                .queryForObject("select class_actuality.actuality from class_actuality\n" +
+                        "inner join classes_embeddings ce on class_actuality.class_id = ce.class_id\n" +
+                        "where class_name like ?\n" +
+                        "order by date desc limit 1", Double.class, className));
+    }
+
+    public List<ClassDto> getAllDto() {
+        return jdbcTemplate.query("select class_id, class_name from classes_embeddings", new ClassDtoMapper());
     }
 }

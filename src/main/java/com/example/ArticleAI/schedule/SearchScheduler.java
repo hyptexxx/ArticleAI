@@ -4,6 +4,7 @@ package com.example.ArticleAI.schedule;
 import com.example.ArticleAI.models.ClassesEmbeddings;
 import com.example.ArticleAI.modules.actualityResolverService.SearchAPIService;
 import com.example.ArticleAI.repository.ClassesRepository;
+import com.example.ArticleAI.util.MathUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +12,8 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -22,6 +25,7 @@ public class SearchScheduler {
     private final SearchAPIService searchAPIService;
 
     @Scheduled(cron = "0 0 12 * * ?")
+//    @Scheduled(cron = "*/10 * * * * *")
     public void schedulingTask() {
 
         log.info("Schedule update starting, retrieving search API counts");
@@ -43,6 +47,7 @@ public class SearchScheduler {
         log.info("Checking that API results is not null");
 
         if (!searchResults.isEmpty()) {
+            normalizeAll(searchResults);
             log.info("Saving results");
 
             classesRepository.saveOrUpdate(searchResults);
@@ -52,5 +57,16 @@ public class SearchScheduler {
         }
 
         log.error("Search api return's empty result");
+    }
+
+    private void normalizeAll(List<ClassesEmbeddings> searchResults) {
+        log.info("Normalizing results");
+        double[] normilized = MathUtil.stableSoftmax(searchResults.stream()
+                .mapToDouble(ClassesEmbeddings::getActuality)
+                .toArray());
+
+        for (int i = 0; i < searchResults.size(); i++) {
+            searchResults.get(i).setActuality(normilized[i]);
+        }
     }
 }

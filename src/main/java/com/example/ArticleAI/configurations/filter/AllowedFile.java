@@ -9,6 +9,6 @@ import lombok.*;
 @Getter
 @Setter
 public class AllowedFile {
-        LoadedFile loadedFile;
-        Boolean isAllowed;
+    LoadedFile loadedFile;
+    Boolean isAllowed;
 }

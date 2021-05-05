@@ -13,8 +13,8 @@ public class Recomendation {
     String keywordClassMax;
     double actuality;
     List<ClassKeywordPair> classKeywordPairs;
-    ClassKeywordPair classKeywordPairMax;
-    ClassKeywordPair classKeywordPairMin;
+    List<ClassKeywordPair> classKeywordPairMax;
+    List<ClassKeywordPair> classKeywordPairMin;
     List<KeywordClass> classesActuality;
     List<NlpResponse> payload;
 }

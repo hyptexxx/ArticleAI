@@ -1,2 +1,3 @@
 rootProject.name = 'ArticleAI'
+include 'barcode'
 

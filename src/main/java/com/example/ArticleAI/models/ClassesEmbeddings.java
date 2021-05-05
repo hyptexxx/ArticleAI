@@ -11,5 +11,5 @@ public class ClassesEmbeddings {
     Integer id;
     String embedding;
     String name;
-    Long actuality;
+    double actuality;
 }

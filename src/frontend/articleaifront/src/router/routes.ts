@@ -5,8 +5,10 @@ const routes: RouteConfig[] = [
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue') },
-      { path: '/about', component: () => import('pages/About.vue') }
+      { path: '', name: 'main', component: () => import('pages/Index.vue') },
+      { path: '/about', component: () => import('pages/About.vue') },
+      { path: '/fileHistory', name: 'fileHistory', component: () => import('pages/FileHistory.vue') },
+      { path: '/monitoring', name: 'monitoring', component: () => import('pages/Monitoring.vue') }
     ]
   },
 

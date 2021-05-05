@@ -3,76 +3,191 @@ package com.example.ArticleAI.controllers;
 import com.example.ArticleAI.configurations.filter.AllowedContentTypes;
 import com.example.ArticleAI.configurations.filter.AllowedFile;
 import com.example.ArticleAI.controllers.REST.FileProcessorEndpoint;
-import com.example.ArticleAI.dto.YakeDTO;
+import com.example.ArticleAI.controllers.REST.NlpControllerService;
+import com.example.ArticleAI.dto.FileHistoryDto;
 import com.example.ArticleAI.models.ArticleYake;
 import com.example.ArticleAI.models.LoadedFile;
+import com.example.ArticleAI.models.Recomendation;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
+import com.example.ArticleAI.output.PdfGeneratorService;
 import com.example.ArticleAI.parser.YakeResponseParser;
+import com.example.ArticleAI.repository.FileRepository;
 import com.example.ArticleAI.repository.YakeRepository;
 import com.example.ArticleAI.service.ApachePOI.POIService;
 import com.example.ArticleAI.service.RequestService;
 import com.example.ArticleAI.service.TextService;
+import com.ibm.icu.text.Transliterator;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessageSendingOperations;
+import org.springframework.messaging.simp.annotation.SendToUser;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.FileAlreadyExistsException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 
 @Slf4j
-@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 @RestController
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
     private final POIService poiService;
     private final RequestService requestService;
     private final TextService iiTextService;
+    private final PdfGeneratorService pdfGeneratorService;
     private final YakeRepository yakeRepository;
     private final SimpMessageSendingOperations messagingTemplate;
+    private final FileRepository fileRepository;
 
     private final FileProcessor fileProcessor;
 
+    private final NlpControllerService nlpControllerService;
 
     @Override
     @SneakyThrows
+    @SendToUser("/topic/analyseSteps")
     public ResponseEntity<Object> processFiles(MultipartFile file,
                                                ArticleYake articleYake) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         if (!file.isEmpty()) {
             try {
-                Optional<LoadedFile> savedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
+                Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
                         .orElseThrow(IllegalAccessError::new)
                         .getLoadedFile());
 
-                ArticleYake parsedArticle = parseText(savedFile, articleYake).get(0);
-                Integer generatedArticleId = yakeRepository.saveArticle(parsedArticle)
-                        .orElseThrow(IllegalAccessException::new);
+                ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
+                yakeRepository.saveArticle(parsedArticle);
+                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 1);
+                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 2);
+                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
+                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 4);
 
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "2");
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "3");
-                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "4");
-                return ResponseEntity.status(HttpStatus.OK).body(YakeDTO.builder()
-                        .generatedArticleId(generatedArticleId)
-                        .yakeResponse(YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
-                                .orElseThrow(IllegalAccessError::new))
-                        .build());
+                Recomendation recomendation = nlpControllerService.actualityAnalyse(
+                        YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
+                                .orElseThrow(IllegalArgumentException::new)
+                );
+                return ResponseEntity.status(HttpStatus.OK).body(recomendation);
 
             } catch (FileAlreadyExistsException e) {
-                return ResponseEntity.status(HttpStatus.OK).body(null);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
             }
         }
 
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
+    }
+
+    @Override
+    public ResponseEntity<Resource> getDocumentById(HttpServletRequest request) throws IOException {
+        final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+        final Integer publicationId = fileRepository.getFileIdByUserId(Integer.valueOf(userId));
+        final String url = String.format("%s://%s:%d/api/file/%s",
+                request.getScheme(), request.getServerName(), request.getServerPort(), publicationId);
+        if (StringUtils.isNumeric(userId)) {
+            final File file = pdfGeneratorService.generate(url, Integer.valueOf(userId), publicationId);
+            final Integer certKey;
+            try {
+                certKey = fileRepository.saveCertificate(file.getAbsolutePath(), publicationId);
+                fileRepository.updatePublication(publicationId, certKey);
+            } catch (SQLIntegrityConstraintViolationException throwables) {
+                log.info("certificate db is already exists userId: {}, row: {} ",
+                        Integer.valueOf(userId), file.getAbsolutePath());
+            }
+
+            final Path path = Paths.get(file.getAbsolutePath());
+            final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+            final HttpHeaders header = new HttpHeaders();
+
+            header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
+
+            return ResponseEntity.ok()
+                    .headers(header)
+                    .contentLength(file.length())
+                    .contentType(MediaType.parseMediaType("application/octet-stream"))
+                    .body(resource);
+        }
+
+        return ResponseEntity.badRequest()
+                .build();
+    }
+
+    @Override
+    public ResponseEntity<Resource> getFile(Integer publicationId) throws IOException {
+        String filePath = fileRepository.getCertificateByFileId(publicationId);
+        final File file = new File(filePath);
+        final Path path = Paths.get(file.getAbsolutePath());
+        final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+        final HttpHeaders header = new HttpHeaders();
+
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
+
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(resource);
+    }
+
+    @Override
+    public ResponseEntity<Object> getFilesHistoryByUserId() {
+        final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        if (StringUtils.isNumeric(userId)) {
+            final List<FileHistoryDto> fileHistories = fileRepository.getFilesHistoryByUserId(Integer.valueOf(userId));
+
+            return ResponseEntity.status(HttpStatus.OK).body(fileHistories);
+        }
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
+    }
+
+    @Override
+    public ResponseEntity<Object> getFileByFileName(Integer fileId, String type) throws IOException {
+        String filePath = null;
+        if (type.equals("publication")) {
+            filePath = fileRepository.getFilePathById(fileId);
+        }
+
+        if (type.equals("certificate")) {
+            filePath = fileRepository.getCertificatePathById(fileId);
+        }
+
+        if (StringUtils.isBlank(filePath)) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
+
+        final File file = new File(filePath);
+        final Path path = Paths.get(file.getAbsolutePath());
+        final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
+        final HttpHeaders header = new HttpHeaders();
+
+        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
+
+        return ResponseEntity.ok()
+                .headers(header)
+                .contentLength(file.length())
+                .contentType(MediaType.parseMediaType("application/octet-stream"))
+                .body(resource);
     }
 
     private Optional<AllowedFile> getIfAllowed(MultipartFile file) {
@@ -112,6 +227,12 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
             }
         });
         return result;
+    }
+
+    public static String transliterate(String message) {
+        Transliterator toLatinTrans = Transliterator.getInstance("Cyrillic-Latin");
+        String result = toLatinTrans.transliterate(message);
+        return result.replaceAll("[*+?^${}()!<>@#,]", "");
     }
 }
 

@@ -18,7 +18,7 @@ public class YakeResponseParser {
                 result.add(
                         YakeResponse.builder()
                                 .ngram(jsonArray.getJSONObject(i).getString("ngram"))
-                                .score(jsonArray.getJSONObject(i).getInt("score"))
+                                .score(jsonArray.getJSONObject(i).getDouble("score"))
                                 .build()
                 );
             }

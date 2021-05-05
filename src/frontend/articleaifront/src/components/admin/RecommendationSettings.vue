@@ -33,6 +33,16 @@
           :rows-per-page-options="[0]"
           row-key='keyword')
         q-table(
+          title='Результаты анализа текста'
+          :data='this.yakeResponse.yakeResponse'
+          :separator='separator'
+          virtual-scroll
+          style='width: 700px'
+          :columns='yakeColumns'
+          pagination.sync="pagination"
+          :rows-per-page-options="[0]"
+          row-key='ngram')
+        q-table(
           title='Результаты фильтрации'
           :data='this.srecommendation.payload'
           :separator='separator'
@@ -42,12 +52,14 @@
           pagination.sync="pagination"
           :rows-per-page-options="[0]"
           row-key='ngram')
+
 </template>
 
 <script lang="ts">
 import { Component, Mixins, PropSync, Watch } from 'vue-property-decorator'
 import { Recommendations } from 'src/models/Recommendation'
 import RecommendationStore from 'src/store/RecommendationStore'
+import AnalyseResponse from 'src/models/AnalyseResponse'
 
 @Component
 export default class RecommendationSettings extends Mixins(RecommendationStore) {
@@ -62,16 +74,16 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
       ngram: '',
       value: 0
     }],
-    classKeywordPairMax: {
+    classKeywordPairMax: [{
       actuality: 0,
       cluster: '',
       keyword: ''
-    },
-    classKeywordPairMin: {
+    }],
+    classKeywordPairMin: [{
       actuality: 0,
       cluster: '',
       keyword: ''
-    },
+    }],
     classKeywordPairs: [{
       actuality: 0,
       cluster: '',
@@ -85,6 +97,18 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
     keywordClassMax: ''
   }
 
+  yakeResponse: AnalyseResponse = {
+    yakeResponse: [{
+      ngram: '',
+      score: 0
+    }],
+    generatedArticleId: 0
+  }
+
+  private mounted (): void {
+    this.yakeResponse = this.yakeResponseStore
+  }
+
   @Watch('recommendations')
   recommendationWatcher (): void {
     this.srecommendation = this.recommendations
@@ -93,7 +117,6 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
   private maximizedToggle = true
 
   classKeyActuality = [
-    { name: 'cluster', label: 'Класс', field: 'cluster', align: 'center', style: 'width: 10px' },
     { name: 'keyword', label: 'Ключевая фраза', field: 'keyword', align: 'center', style: 'width: 10px' },
     { name: 'actuality', label: 'Актаульность', field: 'actuality', align: 'center', style: 'width: 10px' }
   ]
@@ -106,8 +129,13 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
   nlpPayloadColumns = [
     { name: 'ngram', label: 'Ключевая фраза', field: 'ngram', align: 'center', style: 'width: 10px' },
     { name: 'avg', label: 'Среднее', field: 'avg', align: 'center', style: 'width: 10px' },
-    { name: 'value', label: 'Значение важности', field: 'value', align: 'center', style: 'width: 10px' },
+    { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' },
     { name: 'isGood', label: 'Прошёл фильтр', field: 'isGood', align: 'center', style: 'width: 10px' }
+  ]
+
+  yakeColumns = [
+    { name: 'ngram', label: 'Ключевая фраза', field: 'ngram', align: 'center', style: 'width: 10px' },
+    { name: 'score', label: 'Важность', field: 'score', align: 'center', style: 'width: 10px' }
   ]
 }
 

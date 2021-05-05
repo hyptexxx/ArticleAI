@@ -3,8 +3,8 @@ export interface Recommendations {
   actuality: number;
   classKeywordPairs: ClassKeywordPair[];
   classesActuality: KeywordClass[];
-  classKeywordPairMin: ClassKeywordPair;
-  classKeywordPairMax: ClassKeywordPair;
+  classKeywordPairMin: ClassKeywordPair[];
+  classKeywordPairMax: ClassKeywordPair[];
   payload: NlpPayload[]
 }
 
@@ -19,6 +19,7 @@ export interface KeywordClass{
   embedding: string
   classActuality: number
 }
+
 export interface NlpPayload{
   avg: number
   isGood: number

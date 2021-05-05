@@ -11,5 +11,5 @@ public class ClassDistance {
     String keyword;
     String className;
     double distance;
-    Long classActuality;
+    Double classActuality;
 }

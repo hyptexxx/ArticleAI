@@ -1,16 +1,26 @@
 package com.example.ArticleAI.modules.trainModule;
 
 import com.example.ArticleAI.models.LoadedFile;
+import com.example.ArticleAI.repository.FileRepository;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.io.*;
 import java.nio.file.FileAlreadyExistsException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.Optional;
 
 @Slf4j
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class FileProcessor {
+
+    private final FileRepository fileRepository;
+
     /**
      * Path to resources/uploadFiles.
      */
@@ -26,7 +36,9 @@ public class FileProcessor {
      * @return true | false, if file was successfully saved.
      */
     public Optional<LoadedFile> saveFilesToFilesystem(LoadedFile file) throws FileAlreadyExistsException {
+        final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         final File dir = new File(rootPath);
+
         File savedFile;
         BufferedOutputStream stream;
         if (!dir.exists()) {
@@ -58,6 +70,16 @@ public class FileProcessor {
                 e.printStackTrace();
                 return Optional.empty();
             }
+
+            if (StringUtils.isNumeric(userId)) {
+                try {
+                    fileRepository.save(savedFile.getAbsolutePath(), Integer.valueOf(userId));
+                } catch (SQLIntegrityConstraintViolationException throwables) {
+                    log.info("file db row is already exists userId: {}, row: {} ",
+                            Integer.valueOf(userId), savedFile.getAbsolutePath());
+                }
+            }
+
             return Optional.ofNullable(LoadedFile.builder()
                     .savedFile(savedFile)
                     .type(file.getType())

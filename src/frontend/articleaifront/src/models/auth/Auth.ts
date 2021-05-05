@@ -9,8 +9,17 @@ export interface UserCredentials {
 }
 
 export interface User {
-  login: string
-  post: string
-  idUser: number
-  role: string
+  response: string,
+  id: number,
+  pin: number,
+  info: string,
+  success: boolean,
+  fio: string,
+  adminAuth: number,
+  editorAuth: number,
+  userType: number,
+  firstAuth: number,
+  email: string,
+  allowed: number,
+  avatar: string
 }
