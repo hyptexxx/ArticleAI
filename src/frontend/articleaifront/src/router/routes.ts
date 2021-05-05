@@ -1,4 +1,7 @@
 import { RouteConfig } from 'vue-router'
+import AuthService from 'src/services/AuthService'
+
+const authService = new AuthService()
 
 const routes: RouteConfig[] = [
   {
@@ -7,8 +10,18 @@ const routes: RouteConfig[] = [
     children: [
       { path: '', name: 'main', component: () => import('pages/Index.vue') },
       { path: '/about', component: () => import('pages/About.vue') },
-      { path: '/fileHistory', name: 'fileHistory', component: () => import('pages/FileHistory.vue') },
-      { path: '/monitoring', name: 'monitoring', component: () => import('pages/Monitoring.vue') }
+      {
+        path: '/fileHistory',
+        beforeEnter: authService.isAuth,
+        name: 'fileHistory',
+        component: () => import('pages/FileHistory.vue')
+      },
+      {
+        path: '/monitoring',
+        beforeEnter: authService.isAuth,
+        name: 'monitoring',
+        component: () => import('pages/Monitoring.vue')
+      }
     ]
   },
 

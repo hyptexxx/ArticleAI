@@ -19,8 +19,6 @@ public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .antMatchers("/api/files/analyze").permitAll()
                 .antMatchers("/api/nlp/analyse").permitAll()
                 .antMatchers("/api/**").authenticated()
-                .antMatchers("/fileHistory").authenticated()
-                .antMatchers("/monitoring").authenticated()
                 .antMatchers("/", "/js/**", "/css/**").permitAll();
         http.csrf().disable();
     }

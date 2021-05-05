@@ -23,6 +23,7 @@ export default boot(({ Vue, router }) => {
     if (response) {
       if (response.status === 401 || response.status === 403) {
         LocalStorage.remove('isLogged')
+        LocalStorage.remove('user')
       }
       return response
     }
