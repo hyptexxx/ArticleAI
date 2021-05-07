@@ -137,30 +137,32 @@ public class DistanceService {
         }
     }
 
+    private void test(List<KeywordClass> classes,
+                      List<ClassDistance> distance) {
 
-    private void test(List<KeywordClass> keywordClasses, List<ClassDistance> classDistances) {
-        final List<KeywordClass> multi = new ArrayList<>();
-        List<ClassDistance> minus = classDistances.stream()
-                .map(classDistance -> ClassDistance.builder()
-                        .distance(1 - classDistance.getDistance())
-                        .className(classDistance.getClassName())
-                        .classActuality(classDistance.getClassActuality())
-                        .keyword(classDistance.getKeyword())
-                        .build())
-                .collect(Collectors.toList());
-
-        keywordClasses.forEach(keywordClass -> {
-            List<ClassDistance> temp = minus.stream()
-                    .filter(classDistance -> classDistance.getClassName().equals(keywordClass.getName()))
-                    .collect(Collectors.toList());
-
-            multi.addAll(temp.stream()
-                    .map(classDistance -> KeywordClass.builder()
-                            .name(keywordClass.getName())
-                            .embedding(keywordClass.getEmbedding())
-                            .classActuality(keywordClass.getClassActuality() * classDistance.getDistance())
+        List<ClassDistance> N = new ArrayList<>();
+        for (KeywordClass aClass : classes) {
+            N.addAll(distance.stream()
+                    .filter(classDistance -> classDistance.getClassName().equals(aClass.getName()))
+                    .map(classDistance -> ClassDistance.builder()
+                            .distance(classDistance.getDistance())
+                            .className(classDistance.getClassName())
+                            .keyword(classDistance.getKeyword())
+                            .classActuality(aClass.getClassActuality())
                             .build())
                     .collect(Collectors.toList()));
-        });
+        }
+
+        final List<ClassDistance> keywords = new ArrayList<>();
+        for (int i = 0; i < N.size() / classes.size(); i++) {
+            double sum = 0.0;
+            for (int j = 0; j < classes.size(); j++) {
+                final int elemIndex = N.size() / classes.size() + j;
+                sum += N.get(elemIndex).getClassActuality() * (1 - (N.get(elemIndex)).getDistance());
+            }
+
+            N.get(i).setClassActuality(sum / classes.size());
+            keywords.add(N.get(i));
+        }
     }
 }

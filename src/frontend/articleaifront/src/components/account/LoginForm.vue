@@ -3,7 +3,7 @@
     q-card-section
       .text-h6 Авторизация
     q-card-section
-      q-input(filled v-model="userCredentials.login" label="Логин" type='text')
+      q-input(filled v-model="userCredentials.login" label="Логин" type='text' v-on:keypress.enter="authorizeUser")
       span.text-red-10(v-if="!$v.userCredentials.login.required && $v.userCredentials.login.$params.required" class="error-label") Обязательно
     q-card-section
       q-input(filled v-model="userCredentials.password" label="Пароль" type='password' v-on:keypress.enter="authorizeUser")
