@@ -5,15 +5,15 @@ import com.example.ArticleAI.configurations.filter.AllowedFile;
 import com.example.ArticleAI.controllers.REST.FileProcessorEndpoint;
 import com.example.ArticleAI.controllers.REST.NlpControllerService;
 import com.example.ArticleAI.dto.FileHistoryDto;
-import com.example.ArticleAI.models.ArticleYake;
-import com.example.ArticleAI.models.LoadedFile;
-import com.example.ArticleAI.models.Recomendation;
+import com.example.ArticleAI.models.*;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
 import com.example.ArticleAI.output.PdfGeneratorService;
 import com.example.ArticleAI.parser.YakeResponseParser;
 import com.example.ArticleAI.repository.FileRepository;
+import com.example.ArticleAI.repository.RecommendationRepository;
 import com.example.ArticleAI.repository.YakeRepository;
 import com.example.ArticleAI.service.ApachePOI.POIService;
+import com.example.ArticleAI.service.RecomendationService;
 import com.example.ArticleAI.service.RequestService;
 import com.example.ArticleAI.service.TextService;
 import com.ibm.icu.text.Transliterator;
@@ -38,7 +38,6 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -60,6 +59,8 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final YakeRepository yakeRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final FileRepository fileRepository;
+    private final RecomendationService recomendationService;
+    private final RecommendationRepository recommendationRepository;
 
     private final FileProcessor fileProcessor;
 
@@ -71,30 +72,57 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     public ResponseEntity<Object> processFiles(MultipartFile file,
                                                ArticleYake articleYake) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
+        final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         if (!file.isEmpty()) {
             Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
                     .orElseThrow(IllegalAccessError::new)
                     .getLoadedFile());
-
-            ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
-            yakeRepository.saveArticle(parsedArticle);
             messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 1);
+            ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
             messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 2);
-            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
-            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 4);
 
-            Recomendation recomendation = nlpControllerService.actualityAnalyse(
+            yakeRepository.saveArticle(parsedArticle);
+
+            messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
+
+            List<NlpResponse> filteredKeyWords = nlpControllerService.doFilter(
                     YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
-                            .orElseThrow(IllegalArgumentException::new)
+                    .orElseThrow(IllegalArgumentException::new)
             );
 
+            List<ClassDistance> classDistances = nlpControllerService.getDistance(filteredKeyWords);
+            List<TopSubject> topSubjects
+                    = recomendationService.getClassesForPublication(filteredKeyWords, classDistances);
+            Recommendation recommendation
+                    = recomendationService.getRecommendation(topSubjects, classDistances, filteredKeyWords);
 
-            log.info("Получил рекомендации: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-            return ResponseEntity.status(HttpStatus.OK).body(recomendation);
+            if (recommendation != null) {
+                if (StringUtils.isNumeric(userId)) {
+                    recommendationRepository.save(recommendation, Integer.parseInt(userId));
+                } else {
+                    recommendationRepository.save(recommendation, -1);
+                }
+
+                log.info("Получил рекомендации: {}",
+                        SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+                messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "5");
+
+                return ResponseEntity
+                        .status(HttpStatus.OK)
+                        .body(recommendation);
+            }
+
+            log.info("Ошибка получения рекомендаций: {}",
+                    SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+
+            return ResponseEntity
+                    .status(HttpStatus.BAD_REQUEST)
+                    .body(null);
 
         }
 
-        log.error("Не удалось сформировать рекомендации: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        log.error("Не удалось сформировать рекомендации: {}",
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         return ResponseEntity.status(HttpStatus.UNPROCESSABLE_ENTITY).body(null);
     }
 
@@ -106,7 +134,10 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         final String url = String.format("%s://%s:%d/api/file/%s",
                 request.getScheme(), request.getServerName(), request.getServerPort(), publicationId);
         if (StringUtils.isNumeric(userId)) {
-            final File file = pdfGeneratorService.generate(url, Integer.valueOf(userId), publicationId);
+
+            final double actualityPercent
+                    = recommendationRepository.getRecommendationActualityByUserId(Integer.valueOf(userId));
+            final File file = pdfGeneratorService.generate(url, Integer.valueOf(userId), publicationId, actualityPercent);
             final Integer certKey;
             try {
                 certKey = fileRepository.saveCertificate(file.getAbsolutePath(), publicationId);
@@ -120,7 +151,9 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
             final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
             final HttpHeaders header = new HttpHeaders();
 
-            header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
+            header.add(
+                    HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName())
+            );
 
             log.info("{} Получил сертификат: {}", userId, transliterate(file.getName()));
             return ResponseEntity.ok()
@@ -130,7 +163,8 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                     .body(resource);
         }
 
-        log.error("Не удалось выдать сертификат: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        log.error("Не удалось выдать сертификат: {}",
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         return ResponseEntity.badRequest()
                 .build();
     }
@@ -143,8 +177,13 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
         final HttpHeaders header = new HttpHeaders();
 
-        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
-        log.info("{} выгрузил файл: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
+        header.add(
+                HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName())
+        );
+
+        log.info("{} выгрузил файл: {}",
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
+
         return ResponseEntity.ok()
                 .headers(header)
                 .contentLength(file.length())
@@ -184,9 +223,12 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
         final ByteArrayResource resource = new ByteArrayResource(Files.readAllBytes(path));
         final HttpHeaders header = new HttpHeaders();
 
-        header.add(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName()));
+        header.add(
+                HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=" + transliterate(file.getName())
+        );
 
-        log.info("{} выгрузил файл: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
+        log.info("{} выгрузил файл: {}",
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal(), transliterate(file.getName()));
         return ResponseEntity.ok()
                 .headers(header)
                 .contentLength(file.length())
@@ -214,7 +256,8 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
             }
         }
 
-        log.info("{} недопустимый тип файла: {}", SecurityContextHolder.getContext().getAuthentication().getPrincipal(), file.getName());
+        log.info("{} недопустимый тип файла: {}",
+                SecurityContextHolder.getContext().getAuthentication().getPrincipal(), file.getName());
         return Optional.empty();
     }
 

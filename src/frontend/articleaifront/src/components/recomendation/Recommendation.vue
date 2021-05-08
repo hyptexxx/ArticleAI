@@ -97,19 +97,8 @@ export default class Recommendation extends Mixins(RequestService, Recommendatio
   recomendation: Recommendations = {
     payload: [],
     actuality: 0,
-    classKeywordPairMax: [{
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    }],
-    classKeywordPairMin: [{
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    }],
-    classKeywordPairs: [],
-    classesActuality: [],
-    keywordClassMax: ''
+    hasTags: [''],
+    topSubjects: []
   }
 
   @Watch('step')

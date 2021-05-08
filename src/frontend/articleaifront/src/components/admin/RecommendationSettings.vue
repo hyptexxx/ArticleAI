@@ -67,34 +67,10 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
 
   @PropSync('dialog', { type: Boolean }) sDialog!: true
   private srecommendation: Recommendations = {
+    payload: [],
     actuality: 0,
-    payload: [{
-      avg: 0,
-      isGood: 0,
-      ngram: '',
-      value: 0
-    }],
-    classKeywordPairMax: [{
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    }],
-    classKeywordPairMin: [{
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    }],
-    classKeywordPairs: [{
-      actuality: 0,
-      cluster: '',
-      keyword: ''
-    }],
-    classesActuality: [{
-      name: '',
-      embedding: '',
-      classActuality: 0
-    }],
-    keywordClassMax: ''
+    hasTags: [''],
+    topSubjects: []
   }
 
   yakeResponse: AnalyseResponse = {

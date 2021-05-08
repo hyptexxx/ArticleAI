@@ -2,6 +2,8 @@ package com.example.ArticleAI.util;
 
 import lombok.experimental.UtilityClass;
 
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.Arrays;
 
 @UtilityClass
@@ -22,5 +24,11 @@ public class MathUtil {
         return Arrays.stream(numenator)
                 .map(operand -> operand / Arrays.stream(numenator).sum())
                 .toArray();
+    }
+
+    public double withBigDecimal(double value, int places) {
+        BigDecimal bigDecimal = new BigDecimal(value);
+        bigDecimal = bigDecimal.setScale(places, RoundingMode.HALF_UP);
+        return bigDecimal.doubleValue();
     }
 }

@@ -41,7 +41,7 @@ public class PdfGeneratorService {
             "resources" + File.separator +
             "uploadedFiles";
 
-    public File generate(String barcodeText, Integer userId, Integer publicationId) {
+    public File generate(String barcodeText, Integer userId, Integer publicationId, double actualityPercent) {
 
         UtmoUserDto utmoUserDto = userRepository.getUserById(userId);
 
@@ -66,7 +66,7 @@ public class PdfGeneratorService {
             img.scalePercent(30F);
             document.add(img);
 
-            appendText(document, "Actuality: 40%");
+            appendText(document, "Actuality: " + actualityPercent + "%");
             appendText(document, "Upload date: " + new SimpleDateFormat("yyyy-MM-dd")
                     .format(new Date()));
             appendText(document, utmoUserDto.getFio());

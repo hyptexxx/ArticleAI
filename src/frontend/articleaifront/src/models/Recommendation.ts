@@ -1,17 +1,19 @@
 export interface Recommendations {
-  keywordClassMax: string;
   actuality: number;
-  classKeywordPairs: ClassKeywordPair[];
-  classesActuality: KeywordClass[];
-  classKeywordPairMin: ClassKeywordPair[];
-  classKeywordPairMax: ClassKeywordPair[];
+  hasTags: string[];
   payload: NlpPayload[]
+  topSubjects: TopSubject[]
 }
 
 export interface ClassKeywordPair{
   cluster: string
   keyword: string
   actuality: number
+}
+
+export interface TopSubject{
+  name: string
+  percent: number
 }
 
 export interface KeywordClass{
