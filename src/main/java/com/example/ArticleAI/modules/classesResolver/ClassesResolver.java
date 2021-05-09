@@ -6,7 +6,7 @@ import com.example.ArticleAI.modules.classesResolver.models.Keyword;
 import com.example.ArticleAI.modules.classesResolver.service.ClassesResolverService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import org.apache.commons.collections4.ListUtils;
+//import org.apache.commons.collections4.ListUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +22,7 @@ public class ClassesResolver {
 
     private final ClassesResolverService classesResolverService;
 
+
     public List<Class> resolve() throws EmptyKeywordListException {
         List<Keyword> existingKeywordsList = classesResolverService.getExistingKeywordsList();
         List<Class> existingClassList;
@@ -30,7 +31,7 @@ public class ClassesResolver {
         for (String keyword : this.keyWords) {
             if (classesResolverService.isKeywordExistsInExistingClassesList(keyword, existingKeywordsList)) {
                 existingClassList = classesResolverService.getExistingClassList(keyword);
-                resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
+//                resultClassList = ListUtils.union(resultClassList, processClass(existingClassList));
             } else {
                 classesResolverService.saveNewKeyword(keyword, articleId);
             }

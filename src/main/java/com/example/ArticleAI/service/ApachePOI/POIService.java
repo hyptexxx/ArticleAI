@@ -1,17 +1,27 @@
 package com.example.ArticleAI.service.ApachePOI;
 
 import com.example.ArticleAI.models.ArticleYake;
+import com.google.common.base.CharMatcher;
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.extractor.ExtractorFactory;
-import org.apache.poi.extractor.POITextExtractor;
+import org.apache.poi.hwpf.HWPFDocument;
+import org.apache.poi.hwpf.extractor.WordExtractor;
+import org.apache.poi.poifs.filesystem.POIFSFileSystem;
+import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
+import org.apache.poi.xwpf.usermodel.XWPFDocument;
+import org.apache.poi.xwpf.usermodel.XWPFParagraph;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.ParseException;
+import java.util.Arrays;
+import java.util.List;
 
 @Service
-public class POIService{
+public class POIService {
 
     private final
     POIArticleProcessService articleProcessService;
@@ -30,8 +40,28 @@ public class POIService{
         String articleText = null;
         try {
             final FileInputStream fis = new FileInputStream(article.getAbsolutePath());
-            POITextExtractor extractor = ExtractorFactory.createExtractor(fis);
-            articleText = extractor.getText();
+            switch (FilenameUtils.getExtension(article.getAbsolutePath())) {
+                case "doc":
+                    try {
+                        HWPFDocument doc = new HWPFDocument(fis);
+                        WordExtractor extractor = new WordExtractor(doc);
+                        articleText = Arrays.toString(extractor.getParagraphText());
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                case "docx":
+                    try {
+                        XWPFDocument doc = new XWPFDocument(fis);
+                        XWPFWordExtractor xwpfWordExtractor = new XWPFWordExtractor(doc);
+                        articleText = xwpfWordExtractor.getText();
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    break;
+                default:
+                    // do nothing
+            }
             fis.close();
         } catch (Exception e) {
             e.printStackTrace();

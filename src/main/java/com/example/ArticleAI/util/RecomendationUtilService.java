@@ -57,7 +57,7 @@ public class RecomendationUtilService {
 
         double sum = maxClassActuality.getClassActuality();
         for (ClassDistance classDistance : classDistances) {
-            if (!classDistance.getClassActuality().equals(maxClassActuality.getClassActuality())) { //todo если будет много одинаковых актуальностей?
+            if (!classDistance.getClassActuality().equals(maxClassActuality.getClassActuality())) { //todo РµСЃР»Рё Р±СѓРґРµС‚ РјРЅРѕРіРѕ РѕРґРёРЅР°РєРѕРІС‹С… Р°РєС‚СѓР°Р»СЊРЅРѕСЃС‚РµР№?
                 sum += classDistance.getClassActuality() * 0.99;
             }
         }
