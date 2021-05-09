@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 public class RecomendationUtilService {
     private final ClassesRepository classesRepository;
 
-    public static List<String> getKeywordNams (List<NlpResponse> filteredKeywords) {
+    public static List<String> getKeywordNams(List<NlpResponse> filteredKeywords) {
         return filteredKeywords.stream()
                 .map(NlpResponse::getNgram)
                 .collect(Collectors.toList());
@@ -48,5 +48,20 @@ public class RecomendationUtilService {
                 .map(ClassDistance::getClassActuality)
                 .mapToDouble(Double::doubleValue)
                 .sum();
+    }
+
+    public static double getActualityByMax(List<ClassDistance> classDistances) {
+        ClassDistance maxClassActuality = classDistances.stream()
+                .max(Comparator.comparing(ClassDistance::getClassActuality))
+                .orElseThrow(IllegalArgumentException::new);
+
+        double sum = maxClassActuality.getClassActuality();
+        for (ClassDistance classDistance : classDistances) {
+            if (!classDistance.getClassActuality().equals(maxClassActuality.getClassActuality())) { //todo если будет много одинаковых актуальностей?
+                sum += classDistance.getClassActuality() * 0.99;
+            }
+        }
+
+        return sum;
     }
 }

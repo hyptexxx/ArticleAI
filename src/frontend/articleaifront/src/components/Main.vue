@@ -107,7 +107,7 @@ export default class Main extends Mixins(RequestService, LoginStore, Recommendat
       deduplicationThresold: 1,
       deduplicationAlgo: 'leve',
       windowSize: 1,
-      numberOfKeywords: 20,
+      numberOfKeywords: 13,
       text: ''
     }
   }

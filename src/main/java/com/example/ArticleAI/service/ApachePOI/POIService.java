@@ -2,8 +2,8 @@ package com.example.ArticleAI.service.ApachePOI;
 
 import com.example.ArticleAI.models.ArticleYake;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.poi.POITextExtractor;
 import org.apache.poi.extractor.ExtractorFactory;
+import org.apache.poi.extractor.POITextExtractor;
 import org.springframework.stereotype.Service;
 
 import java.io.File;

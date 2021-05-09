@@ -81,7 +81,7 @@ export default class Recommendation extends Mixins(RequestService, Recommendatio
       deduplicationThresold: 1,
       deduplicationAlgo: 'leve',
       windowSize: 1,
-      numberOfKeywords: 20,
+      numberOfKeywords: 13,
       text: ''
     }
   }

@@ -26,19 +26,19 @@ public class ClassesRepository {
     public List<KeywordClass> getAllClassesEmbeddings() {
         List<KeywordClass> result;
         result = jdbcTemplate
-                .query("select embedding, class_name from classes_embeddings", new ClassEmbeddingMapper());
+                .query("select embedding, name from classes", new ClassEmbeddingMapper());
         return result;
     }
 
     public List<String> getAllClassesNames() {
-        return jdbcTemplate.queryForList("select class_name from classes_embeddings", String.class);
+        return jdbcTemplate.queryForList("select name from classes", String.class);
     }
 
     public List<ClassesEmbeddings> getAll() {
         return jdbcTemplate
-                .query("select * from classes_embeddings", (rs, rowNum) -> ClassesEmbeddings.builder()
-                        .id(rs.getInt("class_id"))
-                        .name(rs.getString("class_name"))
+                .query("select * from classes", (rs, rowNum) -> ClassesEmbeddings.builder()
+                        .id(rs.getInt("id"))
+                        .name(rs.getString("name"))
                         .embedding(rs.getNString("embedding"))
                         .build());
     }
@@ -63,12 +63,12 @@ public class ClassesRepository {
     public Optional<Double> getActualityByClassName(String className) {
         return Optional.ofNullable(jdbcTemplate
                 .queryForObject("select class_actuality.actuality from class_actuality\n" +
-                        "inner join classes_embeddings ce on class_actuality.class_id = ce.class_id\n" +
-                        "where class_name like ?\n" +
+                        "inner join classes ce on class_actuality.class_id = ce.id\n" +
+                        "where name like ?\n" +
                         "order by date desc limit 1", Double.class, className));
     }
 
     public List<ClassDto> getAllDto() {
-        return jdbcTemplate.query("select class_id, class_name from classes_embeddings", new ClassDtoMapper());
+        return jdbcTemplate.query("select id, name from classes", new ClassDtoMapper());
     }
 }

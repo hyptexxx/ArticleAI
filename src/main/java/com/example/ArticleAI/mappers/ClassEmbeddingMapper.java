@@ -10,7 +10,7 @@ public class ClassEmbeddingMapper implements RowMapper<KeywordClass> {
     @Override
     public KeywordClass mapRow(ResultSet rs, int rowNum) throws SQLException {
         return KeywordClass.builder()
-                .name(rs.getString("class_name"))
+                .name(rs.getString("name"))
                 .embedding(rs.getString("embedding")
                         .trim()
                         .replaceAll("\r\n", "")

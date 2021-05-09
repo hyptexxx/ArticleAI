@@ -10,8 +10,8 @@ public class ClassDtoMapper implements RowMapper<ClassDto> {
     @Override
     public ClassDto mapRow(ResultSet rs, int rowNum) throws SQLException {
         return ClassDto.builder()
-                .classId(rs.getInt("class_id"))
-                .className(rs.getString("class_name"))
+                .classId(rs.getInt("id"))
+                .className(rs.getString("name"))
                 .build();
     }
 }

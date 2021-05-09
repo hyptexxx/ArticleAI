@@ -17,15 +17,15 @@ public class ActualityRepository {
     public List<ActualityStatsDto> getClassActualityByClassId(Integer classId) {
         return jdbcTemplate.query("select class_actuality.class_id,\n" +
                 "       class_actuality.date,\n" +
-                "       ce.class_name,\n" +
+                "       ce.name,\n" +
                 "       class_actuality.actuality\n" +
                 "from class_actuality\n" +
-                "         inner join classes_embeddings ce\n" +
-                "                    on class_actuality.class_id = ce.class_id\n" +
+                "         inner join classes ce\n" +
+                "                    on class_actuality.class_id = ce.id\n" +
                 "where class_actuality.class_id = ?\n" +
                 "group by class_actuality.date,\n" +
                 "         class_actuality.class_id,\n" +
-                "         ce.class_name,\n" +
+                "         ce.name,\n" +
                 "         class_actuality.actuality", new ActualityStatsDtoMapper(), classId);
     }
 }

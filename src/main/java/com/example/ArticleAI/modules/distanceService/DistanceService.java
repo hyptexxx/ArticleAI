@@ -15,6 +15,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,115 +47,16 @@ public class DistanceService {
         return classDistance;
     }
 
-        ////
-//        calculateKeywordActuality(classesEmbeddings, classDistance);
-//        List<ClassKeywordPair> classKeywordPairs
-//                = getClassKeywordPair(getClassesForKeywords(keywords, classDistance), classesEmbeddings);
-//
-//        return Recomendation.builder()
-//                .actuality(getActualityPercent(getMaxActualityClass(classesEmbeddings),
-//                        getClassesForKeywords(keywords, classDistance),
-//                        classesEmbeddings))
-//                .keywordClassMax(getMaxActualityClass(classesEmbeddings).getName())
-//                .classKeywordPairs(classKeywordPairs)
-//                .classKeywordPairMin(classKeywordPairs.stream()
-//                        .sorted(Comparator.comparing(ClassKeywordPair::getActuality))
-//                        .limit(7)
-//                        .collect(Collectors.toList()))
-//                .classKeywordPairMax(classKeywordPairs.stream()
-//                        .sorted(Comparator.comparing(ClassKeywordPair::getActuality)
-//                                .reversed())
-//                        .limit(7)
-//                        .collect(Collectors.toList()))
-//                .classesActuality(classesEmbeddings.stream()
-//                        .sorted(Comparator.comparing(KeywordClass::getClassActuality))
-//                        .collect(Collectors.toList()))
-//                .payload(payload)
-//                .build();
-//    }
-//
-
-//
-//    public List<ClassKeywordPair> getClassKeywordPair(List<ClassKeywordPair> classKeywords,
-//                                                      List<KeywordClass> classesEmbeddings) {
-//        List<ClassKeywordPair> result = new ArrayList<>();
-//        classKeywords.forEach(className -> result.add(ClassKeywordPair.builder()
-//                .keyword(className.getKeyword())
-//                .cluster(classesEmbeddings.stream()
-//                        .filter(clazz -> clazz.getName().equals(className.getCluster()))
-//                        .max(Comparator.comparing(KeywordClass::getClassActuality))
-//                        .orElseThrow(NoSuchElementException::new).getName())
-//                .actuality(classesEmbeddings.stream()
-//                        .filter(e -> e.getName().equals(className.getCluster()))
-//                        .findFirst()
-//                        .orElseThrow(NoSuchElementException::new)
-//                        .getClassActuality())
-//                .build()));
-//        return result;
-//    }
-//
-//    public KeywordClass getMaxActualityClass(List<KeywordClass> classesEmbeddings) {
-//        return classesEmbeddings.stream()
-//                .max(Comparator.comparing(KeywordClass::getClassActuality))
-//                .orElseThrow(NoSuchElementException::new);
-//    }
-//
-//    public double getActualityPercent(KeywordClass maxActuality,
-//                                      List<ClassKeywordPair> classKeywords,
-//                                      List<KeywordClass> classesEmbeddings) {
-//        List<Double> actualities = new ArrayList<>();
-//        classKeywords.forEach(className -> actualities.addAll(classesEmbeddings.stream()
-//                .filter(clazz -> clazz.getName().equals(className.getCluster()))
-//                .map(KeywordClass::getClassActuality)
-//                .collect(Collectors.toList())));
-//
-//        return withBigDecimal(actualities.stream()
-//                .map(row -> (row * 100) / maxActuality.getClassActuality())
-//                .mapToDouble(Double::doubleValue)
-//                .average()
-//                .orElseThrow(NoSuchElementException::new), 3);
-//    }
-//
-
-//
+    @Deprecated
     private static void normalizeAll(List<ClassDistance> searchResults) {
         log.info("Normalizing results");
-        double[] normilized = MathUtil.stableSoftmax(searchResults.stream()
-                .mapToDouble(ClassDistance::getDistance)
-                .toArray());
+        double max = searchResults.stream()
+                .max(Comparator.comparing(ClassDistance::getDistance))
+                .orElseThrow(IllegalArgumentException::new)
+                .getDistance();
 
-        for (int i = 0; i < searchResults.size(); i++) {
-            searchResults.get(i).setDistance(normilized[i]);
+        for (ClassDistance searchResult : searchResults) {
+            searchResult.setDistance(searchResult.getDistance() / max);
         }
     }
-
-//    private void calculateKeywordActuality(List<KeywordClass> classes, List<ClassDistance> distance) {
-//
-//        List<ClassDistance> N = new ArrayList<>();
-//        for (KeywordClass aClass : classes) {
-//            N.addAll(distance.stream()
-//                    .filter(classDistance -> classDistance.getClassName().equals(aClass.getName()))
-//                    .map(classDistance -> ClassDistance.builder()
-//                            .distance(classDistance.getDistance())
-//                            .className(classDistance.getClassName())
-//                            .keyword(classDistance.getKeyword())
-//                            .classActuality(aClass.getClassActuality())
-//                            .build())
-//                    .collect(Collectors.toList()));
-//        }
-//
-//        final List<ClassDistance> keywords = new ArrayList<>();
-//        int elemIndex;
-//
-//        for (int i = 0; i < N.size() / classes.size(); i++) {
-//            double sum = 0.0;
-//            for (int j = 0; j < classes.size(); j++) {
-//                elemIndex = N.size() / classes.size() + j;
-//                sum += N.get(elemIndex).getClassActuality() * (1 - (N.get(elemIndex)).getDistance());
-//            }
-//
-//            N.get(i).setClassActuality(sum / classes.size());
-//            keywords.add(N.get(i));
-//        }
-//    }
 }

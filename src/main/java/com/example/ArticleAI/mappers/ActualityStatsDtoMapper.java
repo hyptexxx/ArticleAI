@@ -14,7 +14,7 @@ public class ActualityStatsDtoMapper implements RowMapper<ActualityStatsDto> {
         return ActualityStatsDto.builder()
                 .actuality(rs.getDouble("actuality"))
                 .classId(rs.getInt("class_id"))
-                .className(rs.getString("class_name"))
+                .className(rs.getString("name"))
                 .date(formatDate(rs.getDate("date")))
                 .build();
     }

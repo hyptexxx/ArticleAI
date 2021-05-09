@@ -10,6 +10,7 @@ import java.io.File;
 @Builder
 @Value
 public class LoadedFile {
+    Integer fileId;
     MultipartFile loadedFile;
     File savedFile;
     AllowedContentTypes type;

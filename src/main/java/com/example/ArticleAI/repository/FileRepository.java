@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.sql.PreparedStatement;
 import java.sql.SQLIntegrityConstraintViolationException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.List;
 import java.util.Objects;
 
@@ -22,15 +23,24 @@ import java.util.Objects;
 public class FileRepository {
     private final JdbcTemplate jdbcTemplate;
 
-    public void save(String path, Integer userId) throws SQLIntegrityConstraintViolationException {
+    public Integer save(String path) throws SQLIntegrityConstraintViolationException {
+        KeyHolder keyHolder = new GeneratedKeyHolder();
         try {
-            jdbcTemplate.update("insert into files(user_id, file_path, date) values (?, ?, current_date)",
-                    userId, path);
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection
+                        .prepareStatement("insert into files(file_path, date) values (?, current_date)",
+                                Statement.RETURN_GENERATED_KEYS);
+                ps.setString(1, path);
+                return ps;
+            }, keyHolder);
+
+            return Objects.requireNonNull(keyHolder.getKey()).intValue();
         } catch (Exception e) {
             if (e.getCause() instanceof SQLIntegrityConstraintViolationException) {
                 throw new SQLIntegrityConstraintViolationException();
             }
         }
+        return null;
     }
 
     public String getCertificateByFileId(Integer publicationId) {
@@ -41,7 +51,13 @@ public class FileRepository {
     }
 
     public Integer getFileIdByUserId(Integer userId) {
-        return jdbcTemplate.queryForObject("select id from files where user_id = ? order by id desc limit 1",
+        return jdbcTemplate.queryForObject("select files.id\n" +
+                        "from files\n" +
+                        "join articles a on files.id = a.file_id\n" +
+                        "join users u on a.user_id = u.id\n" +
+                        "where user_id = ?\n" +
+                        "order by id desc\n" +
+                        "limit 1",
                 Integer.class, userId);
     }
 
@@ -79,10 +95,13 @@ public class FileRepository {
                         "       files.date             as publication_upload_date,\n" +
                         "       users.fio              as fio,\n" +
                         "       files.id               as publication_id,\n" +
-                        "       certificates.id        as certificate_id\n" +
+                        "       certificates.id        as certificate_id,\n" +
+                        "       r.actuality            as actuality\n" +
                         "from users\n" +
-                        "         inner join files on files.user_id = users.id\n" +
-                        "         inner join certificates on files.certificate_id = certificates.id\n" +
+                        "         join articles on users.id = articles.user_id\n" +
+                        "         join files on articles.file_id = files.id\n" +
+                        "         join certificates on files.certificate_id = certificates.id\n" +
+                        "         join recommendations r on articles.recommendation_id = r.id\n" +
                         "where users.id = ?",
                new FileHistoryDtoMapper(), userId);
     }
@@ -91,7 +110,15 @@ public class FileRepository {
         return jdbcTemplate.queryForObject("select file_path from files where id = ?", String.class, fileId);
     }
 
+    public Integer getIdByPath (String filePath) {
+        return jdbcTemplate.queryForObject("select id from files where file_path = ?", Integer.class, filePath);
+    }
+
     public String getCertificatePathById (Integer fileId) {
         return jdbcTemplate.queryForObject("select file_path from certificates where id = ?", String.class, fileId);
+    }
+
+    public void updateFile(Integer articleId, Integer fileId) {
+        jdbcTemplate.update("update files set article_id = ? where id = ?", articleId, fileId);
     }
 }

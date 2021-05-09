@@ -38,7 +38,7 @@ public class FileProcessor {
     public Optional<LoadedFile> saveFilesToFilesystem(LoadedFile file) throws FileAlreadyExistsException {
         final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
         final File dir = new File(rootPath);
-
+        Integer fileId = null;
         File savedFile;
         BufferedOutputStream stream;
         if (!dir.exists()) {
@@ -71,17 +71,18 @@ public class FileProcessor {
             return Optional.empty();
         }
 
-        if (StringUtils.isNumeric(userId)) {
-            try {
-                fileRepository.save(savedFile.getAbsolutePath(), Integer.valueOf(userId));
-            } catch (SQLIntegrityConstraintViolationException throwables) {
-                log.info("file db row is already exists userId: {}, row: {} ",
-                        Integer.valueOf(userId), savedFile.getAbsolutePath());
-            }
+        try {
+            fileId = fileRepository.save(savedFile.getAbsolutePath());
+        } catch (SQLIntegrityConstraintViolationException throwables) {
+            fileId = fileRepository.getIdByPath(savedFile.getAbsolutePath());
+            log.info("file db row is already exists userId: {}, row: {} ",
+                    userId, savedFile.getAbsolutePath());
         }
+
 
         return Optional.ofNullable(LoadedFile.builder()
                 .savedFile(savedFile)
+                .fileId(fileId)
                 .type(file.getType())
                 .build());
 

@@ -1,12 +1,46 @@
 package com.example.ArticleAI.service.ApachePOI;
 
+import com.google.common.collect.ImmutableList;
 import org.springframework.stereotype.Service;
 
 import java.text.ParseException;
+import java.util.List;
 
 @Service
 public class POIArticleProcessService {
-
+    private final List<String> BAN_LIST = ImmutableList.of("гбоу",
+            "кафедр",
+            "доцент",
+            "преподавател",
+            "институт",
+            "профессор",
+            "государственн",
+            "общеобразовательн",
+            "орлова",
+            "наталья",
+            "бюджетн",
+            "учрежде",
+            "бюджетн",
+            "отчёт",
+            "руководитель",
+            "учебно-",
+            "учебно-нау",
+            "лаборатори",
+            "преддиплом",
+            "практик",
+            "студента",
+            "студентки",
+            "област",
+            "москов",
+            "москв",
+            "автор",
+            "высше",
+            "кандидат",
+            "университет",
+            "вера",
+            "ольга",
+            "владислав",
+            "статья");
     private String parsedArticleText;
 
     /**
@@ -45,7 +79,7 @@ public class POIArticleProcessService {
      * @param articleText parsed article text
      */
     public void setArticleText(String articleText) {
-        parsedArticleText = articleText.toLowerCase();
+        parsedArticleText = articleText;
     }
 
     /**
@@ -54,10 +88,17 @@ public class POIArticleProcessService {
      */
     public String getArticleParsedText() throws ParseException {
         this.removeEng();
+        this.removeBanWords();
         return this.parsedArticleText;
     }
 
     public void removeEng() throws ParseException {
-        this.parsedArticleText = this.parsedArticleText.replaceAll("[a-z]"," ");
+        this.parsedArticleText = this.parsedArticleText.replaceAll("[a-z]", " ");
+    }
+
+    private void removeBanWords() {
+        BAN_LIST.forEach(s -> this.parsedArticleText = this.parsedArticleText
+                .toLowerCase()
+                .replaceAll("\\S*" + s.toLowerCase() + "\\S*", ""));
     }
 }

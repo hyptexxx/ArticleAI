@@ -73,6 +73,10 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                                                ArticleYake articleYake) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        Integer articleId;
+        Integer recommendationId;
+
+
         if (!file.isEmpty()) {
             Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
                     .orElseThrow(IllegalAccessError::new)
@@ -81,13 +85,24 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
             ArticleYake parsedArticle = parseText(loadedFile, articleYake).get(0);
             messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 2);
 
-            yakeRepository.saveArticle(parsedArticle);
+            if (StringUtils.isNumeric(userId)) {
+                articleId = yakeRepository.saveArticle(parsedArticle, Integer.valueOf(userId), loadedFile.get().getFileId());
+            } else {
+                articleId = yakeRepository.saveArticle(parsedArticle, null, loadedFile.get().getFileId());
+            }
+
+            fileRepository.updateFile(articleId, loadedFile.get().getFileId());
+            yakeRepository.saveYakeParams(articleYake, articleId);
 
             messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", 3);
 
+            List<YakeResponse> responseList = YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
+                    .orElseThrow(IllegalArgumentException::new);
+
+            yakeRepository.saveYakeScores(responseList, articleId);
+
             List<NlpResponse> filteredKeyWords = nlpControllerService.doFilter(
-                    YakeResponseParser.parse(requestService.sendRequest(parsedArticle))
-                    .orElseThrow(IllegalArgumentException::new)
+                    responseList
             );
 
             List<ClassDistance> classDistances = nlpControllerService.getDistance(filteredKeyWords);
@@ -97,11 +112,8 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                     = recomendationService.getRecommendation(topSubjects, classDistances, filteredKeyWords);
 
             if (recommendation != null) {
-                if (StringUtils.isNumeric(userId)) {
-                    recommendationRepository.save(recommendation, Integer.parseInt(userId));
-                } else {
-                    recommendationRepository.save(recommendation, -1);
-                }
+                recommendationId = recommendationRepository.save(recommendation, articleId);
+                yakeRepository.updateArticle(recommendationId, articleId);
 
                 log.info("Получил рекомендации: {}",
                         SecurityContextHolder.getContext().getAuthentication().getPrincipal());
@@ -129,10 +141,10 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     @Override
     public ResponseEntity<Resource> getDocumentById(HttpServletRequest request) throws IOException {
         final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
-
         final Integer publicationId = fileRepository.getFileIdByUserId(Integer.valueOf(userId));
         final String url = String.format("%s://%s:%d/api/file/%s",
                 request.getScheme(), request.getServerName(), request.getServerPort(), publicationId);
+
         if (StringUtils.isNumeric(userId)) {
 
             final double actualityPercent

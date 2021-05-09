@@ -53,7 +53,7 @@ public class RecomendationService {
         return Recommendation.builder()
                 .actuality(
                         MathUtil.withBigDecimal(
-                                RecomendationUtilService.getMaxActuality(softMaxClasses) * 100, 3
+                                RecomendationUtilService.getActualityByMax(softMaxClasses) * 100, 3
                         )
                 )
                 .hasTags(keywordNames.stream()
@@ -95,7 +95,6 @@ public class RecomendationService {
                             .build())
                     .collect(Collectors.toList()));
         }
-
 
         for (int i = 0; i < N.size() / classes.size(); i++) {
             double sum = 0.0;

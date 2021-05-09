@@ -22,15 +22,15 @@ public class RecommendationRepository {
     private final JdbcTemplate jdbcTemplate;
 
     @Transactional
-    public void save(Recommendation recommendation, int userId) throws SQLIntegrityConstraintViolationException {
+    public Integer save(Recommendation recommendation, Integer articleId) throws SQLIntegrityConstraintViolationException {
         KeyHolder keyHolder = new GeneratedKeyHolder();
 
-        final String SQL = "insert into recommendations(user_id, actuality) values (?, ?)";
+        final String SQL = "insert into recommendations(article_id, actuality) values (?, ?)";
         try {
             jdbcTemplate.update(connection -> {
                 PreparedStatement ps = connection
                         .prepareStatement(SQL, Statement.RETURN_GENERATED_KEYS);
-                ps.setInt(1, userId);
+                ps.setInt(1, articleId);
                 ps.setDouble(2, recommendation.getActuality());
                 return ps;
             }, keyHolder);
@@ -68,10 +68,18 @@ public class RecommendationRepository {
                 return recommendation.getTopSubjects().size();
             }
         });
+
+        return Objects.requireNonNull(keyHolder.getKey()).intValue();
     }
 
     public Double getRecommendationActualityByUserId(Integer userId) {
-        return jdbcTemplate.queryForObject("select actuality from recommendations where user_id = ? order by id desc limit 1",
+        return jdbcTemplate.queryForObject("select actuality\n" +
+                        "from recommendations\n" +
+                        "         join articles a on recommendations.article_id = a.id\n" +
+                        "         join users u on a.user_id = u.id\n" +
+                        "where user_id = ?\n" +
+                        "order by recommendations.id desc\n" +
+                        "limit 1",
                 Double.class, userId);
     }
 }

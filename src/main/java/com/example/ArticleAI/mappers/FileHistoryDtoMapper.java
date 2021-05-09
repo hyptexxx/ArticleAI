@@ -20,7 +20,7 @@ public class FileHistoryDtoMapper implements RowMapper<FileHistoryDto> {
                 .publicationId(rs.getInt("publication_id"))
                 .certificateId(rs.getInt("certificate_id"))
                 .fio(rs.getString("fio"))
-                .actuality(10)
+                .actuality(rs.getDouble("actuality"))
                 .build();
     }
 
