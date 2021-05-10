@@ -98,7 +98,10 @@ export default class Recommendation extends Mixins(RequestService, Recommendatio
     payload: [],
     actuality: 0,
     hasTags: [''],
-    topSubjects: []
+    topSubjects: [],
+    yakeResponse: [],
+    classesActuality: [],
+    keywordActuality: []
   }
 
   @Watch('step')

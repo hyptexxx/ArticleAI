@@ -6,6 +6,7 @@ import com.example.ArticleAI.controllers.REST.FileProcessorEndpoint;
 import com.example.ArticleAI.controllers.REST.NlpControllerService;
 import com.example.ArticleAI.dto.FileHistoryDto;
 import com.example.ArticleAI.models.*;
+import com.example.ArticleAI.modules.nlpFilterService.NlpFilterService;
 import com.example.ArticleAI.modules.trainModule.FileProcessor;
 import com.example.ArticleAI.output.PdfGeneratorService;
 import com.example.ArticleAI.parser.YakeResponseParser;
@@ -16,6 +17,7 @@ import com.example.ArticleAI.service.ApachePOI.POIService;
 import com.example.ArticleAI.service.RecomendationService;
 import com.example.ArticleAI.service.RequestService;
 import com.example.ArticleAI.service.TextService;
+import com.example.ArticleAI.util.RecomendationUtilService;
 import com.ibm.icu.text.Transliterator;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -45,6 +47,7 @@ import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 
 @Slf4j
@@ -56,9 +59,11 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
     private final RequestService requestService;
     private final TextService iiTextService;
     private final PdfGeneratorService pdfGeneratorService;
+    private final NlpFilterService nlpFilterService;
     private final YakeRepository yakeRepository;
     private final SimpMessageSendingOperations messagingTemplate;
     private final FileRepository fileRepository;
+    private final RecomendationUtilService recomendationUtilService;
     private final RecomendationService recomendationService;
     private final RecommendationRepository recommendationRepository;
 
@@ -73,9 +78,10 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                                                ArticleYake articleYake) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         final String userId = String.valueOf(SecurityContextHolder.getContext().getAuthentication().getPrincipal());
+        final List<KeywordClass> classes = recomendationUtilService.getKeyWordClass();
         Integer articleId;
         Integer recommendationId;
-
+        Recommendation recommendation;
 
         if (!file.isEmpty()) {
             Optional<LoadedFile> loadedFile = fileProcessor.saveFilesToFilesystem(getIfAllowed(file)
@@ -101,15 +107,16 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
 
             yakeRepository.saveYakeScores(responseList, articleId);
 
-            List<NlpResponse> filteredKeyWords = nlpControllerService.doFilter(
-                    responseList
-            );
+            List<NlpResponse> result = nlpFilterService.doFilter(responseList);
+            List<NlpResponse> filteredKeyWords = result.stream()
+                    .filter(keyWord -> keyWord.getIsGood() == 1)
+                    .collect(Collectors.toList());
 
-            List<ClassDistance> classDistances = nlpControllerService.getDistance(filteredKeyWords);
+            List<ClassDistance> classDistances = nlpControllerService.getDistance(filteredKeyWords, classes);
             List<TopSubject> topSubjects
                     = recomendationService.getClassesForPublication(filteredKeyWords, classDistances);
-            Recommendation recommendation
-                    = recomendationService.getRecommendation(topSubjects, classDistances, filteredKeyWords);
+
+            recommendation = recomendationService.getRecommendation(topSubjects, classDistances, filteredKeyWords, classes);
 
             if (recommendation != null) {
                 recommendationId = recommendationRepository.save(recommendation, articleId);
@@ -119,6 +126,9 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
                         SecurityContextHolder.getContext().getAuthentication().getPrincipal());
                 messagingTemplate.convertAndSendToUser(sessionId, "/topic/analyseSteps", "5");
 
+                recommendation.setPayload(result);
+                recommendation.setYakeResponse(responseList);
+                recommendation.setClassesActuality(classes);
                 return ResponseEntity
                         .status(HttpStatus.OK)
                         .body(recommendation);
@@ -130,7 +140,6 @@ public class FileProcessorEndpointImpl implements FileProcessorEndpoint {
             return ResponseEntity
                     .status(HttpStatus.BAD_REQUEST)
                     .body(null);
-
         }
 
         log.error("Не удалось сформировать рекомендации: {}",

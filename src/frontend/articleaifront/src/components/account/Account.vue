@@ -9,7 +9,7 @@
           q-item-label {{user.fio}}
           q-item-label(caption='') {{user.info}}
       q-card.bg-white.text-amber-1
-        q-btn.bg-grey-3.text-black(align="left" icon="settings" flat label="Параметры" style="width: 100%" v-if="this.clientConfig && this.clientConfig.clientUiConfig && this.clientConfig.clientUiConfig.withSettings")
+        q-btn.bg-grey-3.text-black(align="left" icon="settings" flat label="Параметры" style="width: 100%" @click="showSettings" v-if="this.clientConfig && this.clientConfig.clientUiConfig && this.clientConfig.clientUiConfig.withSettings")
         q-btn.bg-grey-3.text-black(align="left" icon="history" flat label="История загрузок" style="width: 100%" @click="showUploadHistory" v-if="this.clientConfig && this.clientConfig.clientUiConfig && this.clientConfig.clientUiConfig.withHistoryFile")
         q-btn.bg-grey-3.text-black(align="left" icon="visibility" flat label="Мониторинг" style="width: 100%" @click="showMonitoring" v-if="this.clientConfig && this.clientConfig.clientUiConfig && this.clientConfig.clientUiConfig.withMonitoring")
         q-separator
@@ -111,6 +111,10 @@ export default class Account extends Mixins(LoginStore, SocketInitializer) {
 
   private async showMonitoring (): Promise<void> {
     await this.$router.push({ name: 'monitoring' })
+  }
+
+  private async showSettings (): Promise<void> {
+    await this.$router.push({ name: 'settings' })
   }
 
   private async doRoute (): Promise<void> {

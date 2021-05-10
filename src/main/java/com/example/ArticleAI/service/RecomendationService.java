@@ -1,7 +1,6 @@
 package com.example.ArticleAI.service;
 
 import com.example.ArticleAI.models.*;
-import com.example.ArticleAI.repository.ClassesRepository;
 import com.example.ArticleAI.util.MathUtil;
 import com.example.ArticleAI.util.RecomendationUtilService;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,6 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RecomendationService {
-    private final RecomendationUtilService recomendationUtilService;
 
     public List<TopSubject> getClassesForPublication(List<NlpResponse> filteredKeywords,
                                                      List<ClassDistance> classDistance) {
@@ -45,21 +43,22 @@ public class RecomendationService {
 
     public Recommendation getRecommendation(List<TopSubject> topSubjects,
                                             List<ClassDistance> classDistance,
-                                            List<NlpResponse> filteredKeywords) {
-
+                                            List<NlpResponse> filteredKeywords,
+                                            List<KeywordClass> classes) {
         final List<String> keywordNames = RecomendationUtilService.getKeywordNams(filteredKeywords);
-        final List<ClassDistance> softMaxClasses = calculateKeywordActuality(classDistance);
+        final List<ClassDistance> softMaxClasses = calculateKeywordActuality(classDistance, classes);
 
         return Recommendation.builder()
                 .actuality(
                         MathUtil.withBigDecimal(
-                                RecomendationUtilService.getActualityByMax(softMaxClasses) * 100, 3
+                                RecomendationUtilService.getActuality(softMaxClasses) * 100, 3
                         )
                 )
                 .hasTags(keywordNames.stream()
                         .limit(7)
                         .collect(Collectors.toList()))
                 .topSubjects(topSubjects)
+                .keywordActuality(softMaxClasses)
                 .build();
     }
 
@@ -78,10 +77,9 @@ public class RecomendationService {
         return result;
     }
 
-    private List<ClassDistance> calculateKeywordActuality(List<ClassDistance> distance) {
+    private List<ClassDistance> calculateKeywordActuality(List<ClassDistance> distance, List<KeywordClass> classes) {
         final List<ClassDistance> N = new ArrayList<>();
         final List<ClassDistance> keywords = new ArrayList<>();
-        final List<KeywordClass> classes = recomendationUtilService.getKeyWordClass();
         int elemIndex;
 
         for (KeywordClass aClass : classes) {

@@ -23,18 +23,8 @@
           :rows-per-page-options="[0]"
           row-key='name')
         q-table(
-          title='Ключевые слова, Классы, актуальность класса'
-          :data='this.srecommendation.classKeywordPairs'
-          :separator='separator'
-          virtual-scroll
-          style='width: 500px'
-          :columns='classKeyActuality'
-          pagination.sync="pagination"
-          :rows-per-page-options="[0]"
-          row-key='keyword')
-        q-table(
-          title='Результаты анализа текста'
-          :data='this.yakeResponse.yakeResponse'
+          title='Результаты анализа текста в YAKE'
+          :data='this.srecommendation.yakeResponse'
           :separator='separator'
           virtual-scroll
           style='width: 700px'
@@ -43,7 +33,7 @@
           :rows-per-page-options="[0]"
           row-key='ngram')
         q-table(
-          title='Результаты фильтрации'
+          :title = 'this.nlpFilterAvg'
           :data='this.srecommendation.payload'
           :separator='separator'
           virtual-scroll
@@ -52,6 +42,16 @@
           pagination.sync="pagination"
           :rows-per-page-options="[0]"
           row-key='ngram')
+        q-table(
+          title='Актуальность ключевых словосочетаний'
+          :data='this.srecommendation.keywordActuality'
+          :separator='separator'
+          virtual-scroll
+          style='width: 700px'
+          :columns='keywordActualityColumns'
+          pagination.sync="pagination"
+          :rows-per-page-options="[0]"
+          row-key='keyword')
 
 </template>
 
@@ -59,35 +59,27 @@
 import { Component, Mixins, PropSync, Watch } from 'vue-property-decorator'
 import { Recommendations } from 'src/models/Recommendation'
 import RecommendationStore from 'src/store/RecommendationStore'
-import AnalyseResponse from 'src/models/AnalyseResponse'
 
 @Component
 export default class RecommendationSettings extends Mixins(RecommendationStore) {
   private separator = 'cell'
+  private nlpFilterAvg = '';
 
   @PropSync('dialog', { type: Boolean }) sDialog!: true
   private srecommendation: Recommendations = {
     payload: [],
     actuality: 0,
     hasTags: [''],
-    topSubjects: []
-  }
-
-  yakeResponse: AnalyseResponse = {
-    yakeResponse: [{
-      ngram: '',
-      score: 0
-    }],
-    generatedArticleId: 0
-  }
-
-  private mounted (): void {
-    this.yakeResponse = this.yakeResponseStore
+    topSubjects: [],
+    yakeResponse: [],
+    classesActuality: [],
+    keywordActuality: []
   }
 
   @Watch('recommendations')
   recommendationWatcher (): void {
     this.srecommendation = this.recommendations
+    this.nlpFilterAvg = 'Результаты фильтрации через NLP модуль. Среднее: ' + (this.srecommendation.payload[0].avg as unknown as string)
   }
 
   private maximizedToggle = true
@@ -104,7 +96,6 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
 
   nlpPayloadColumns = [
     { name: 'ngram', label: 'Ключевая фраза', field: 'ngram', align: 'center', style: 'width: 10px' },
-    { name: 'avg', label: 'Среднее', field: 'avg', align: 'center', style: 'width: 10px' },
     { name: 'value', label: 'Степень уверенности', field: 'value', align: 'center', style: 'width: 10px' },
     { name: 'isGood', label: 'Прошёл фильтр', field: 'isGood', align: 'center', style: 'width: 10px' }
   ]
@@ -113,6 +104,10 @@ export default class RecommendationSettings extends Mixins(RecommendationStore) 
     { name: 'ngram', label: 'Ключевая фраза', field: 'ngram', align: 'center', style: 'width: 10px' },
     { name: 'score', label: 'Важность', field: 'score', align: 'center', style: 'width: 10px' }
   ]
-}
 
+  keywordActualityColumns = [
+    { name: 'keyword', label: 'Ключевая фраза', field: 'keyword', align: 'center', style: 'width: 10px' },
+    { name: 'classActuality', label: 'Актуальность', field: 'classActuality', align: 'center', style: 'width: 10px' }
+  ]
+}
 </script>

@@ -21,12 +21,11 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class NlpControllerService {
     private final NlpFilterService nlpFilterService;
-    private final RecomendationUtilService recomendationUtilService;
     private final DistanceService distanceService;
     private final SimpMessageSendingOperations messagingTemplate;
 
     @SendToUser("/topic/analyseSteps")
-    public List<ClassDistance> getDistance(List<NlpResponse> filteredKeywords) {
+    public List<ClassDistance> getDistance(List<NlpResponse> filteredKeywords, List<KeywordClass> allKeyWords) {
         final String sessionId = RequestContextHolder.currentRequestAttributes().getSessionId();
         final List<String> keywordNames;
 
@@ -42,19 +41,19 @@ public class NlpControllerService {
             return null;
         }
 
-        return distanceService.getDistance(keywordNames, recomendationUtilService.getKeyWordClass());
+        return distanceService.getDistance(keywordNames, allKeyWords);
     }
 
     public List<NlpResponse> doFilter(List<YakeResponse> yakeData) throws ParseException {
-        final List<NlpResponse> filteredYake = nlpFilterService.doFilter(yakeData);
-        final List<NlpResponse> filteredKeywords = filteredYake.stream()
+        List<NlpResponse> filteredYake = nlpFilterService.doFilter(yakeData);
+        filteredYake = filteredYake.stream()
                 .filter(keyWord -> keyWord.getIsGood() == 1)
                 .collect(Collectors.toList());
 
-        if (filteredKeywords.isEmpty()) {
+        if (filteredYake.isEmpty()) {
             return null;
         }
 
-        return filteredKeywords;
+        return filteredYake;
     }
 }

@@ -21,6 +21,12 @@ const routes: RouteConfig[] = [
         beforeEnter: authService.isAuth,
         name: 'monitoring',
         component: () => import('pages/Monitoring.vue')
+      },
+      {
+        path: '/settings',
+        beforeEnter: authService.isAuth,
+        name: 'settings',
+        component: () => import('pages/Settings.vue')
       }
     ]
   },

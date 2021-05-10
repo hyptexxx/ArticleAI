@@ -1,12 +1,16 @@
+import { YakeResponse } from 'src/models/AnalyseResponse'
+
 export interface Recommendations {
   actuality: number;
   hasTags: string[];
   payload: NlpPayload[]
   topSubjects: TopSubject[]
+  yakeResponse: YakeResponse[]
+  classesActuality: KeywordClass[]
+  keywordActuality: KeywordClass[]
 }
 
-export interface ClassKeywordPair{
-  cluster: string
+export interface KeywordActuality{
   keyword: string
   actuality: number
 }

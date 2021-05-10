@@ -1,34 +1,29 @@
 package com.example.ArticleAI.service.ApachePOI;
 
+import com.example.ArticleAI.models.AppSettings;
 import com.example.ArticleAI.models.ArticleYake;
-import com.google.common.base.CharMatcher;
+import com.example.ArticleAI.repository.AppSettingsRepository;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.poi.hwpf.HWPFDocument;
 import org.apache.poi.hwpf.extractor.WordExtractor;
-import org.apache.poi.poifs.filesystem.POIFSFileSystem;
 import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
-import org.apache.poi.xwpf.usermodel.XWPFParagraph;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.text.ParseException;
 import java.util.Arrays;
-import java.util.List;
 
 @Service
+@RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class POIService {
 
-    private final
-    POIArticleProcessService articleProcessService;
-
-    public POIService(POIArticleProcessService articleProcessService) {
-        this.articleProcessService = articleProcessService;
-    }
+    private final POIArticleProcessService articleProcessService;
+    private final AppSettingsRepository appSettingsRepository;
 
     /**
      * @param article file
@@ -36,6 +31,7 @@ public class POIService {
      * @return full yake model
      */
     public ArticleYake getArticleYakeText(File article, ArticleYake yake) {
+        final AppSettings appSettings = appSettingsRepository.getAll();
         ArticleYake.ArticleYakeBuilder articleYakeBuilder = ArticleYake.builder();
         String articleText = null;
         try {
@@ -71,12 +67,12 @@ public class POIService {
                 articleProcessService.setArticleText(articleText);
                 articleYakeBuilder
                         .text(articleProcessService.getArticleParsedText())
-                        .deduplication_algo(yake.getDeduplication_algo())
-                        .deduplication_thresold(yake.getDeduplication_thresold())
-                        .max_ngram_size(yake.getMax_ngram_size())
-                        .number_of_keywords(yake.getNumber_of_keywords())
-                        .windowSize(yake.getWindowSize())
-                        .language(yake.getLanguage());
+                        .deduplication_algo(appSettings.getYakeParams().getDeduplication_algo())
+                        .deduplication_thresold(appSettings.getYakeParams().getDeduplication_thresold())
+                        .max_ngram_size(appSettings.getYakeParams().getMax_ngram_size())
+                        .number_of_keywords(appSettings.getYakeParams().getNumber_of_keywords())
+                        .windowSize(appSettings.getYakeParams().getWindowSize())
+                        .language(appSettings.getYakeParams().getLanguage());
             }
         } catch (ParseException e) {
             e.printStackTrace();

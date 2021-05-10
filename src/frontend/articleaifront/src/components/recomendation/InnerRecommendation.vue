@@ -38,7 +38,10 @@ export default class InnerRecommendation extends Mixins(RecommendationStore) {
     payload: [],
     actuality: 0,
     hasTags: [''],
-    topSubjects: []
+    topSubjects: [],
+    yakeResponse: [],
+    classesActuality: [],
+    keywordActuality: []
   }
 
   @Watch('recommendations')

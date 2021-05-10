@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class MainPageController {
-    @RequestMapping(value = {"", "/monitoring", "/fileHistory", "/about"}, method = RequestMethod.GET)
+    @RequestMapping(value = {"", "/monitoring", "/fileHistory", "/about", "/settings"}, method = RequestMethod.GET)
     public String catchAllPath () {
         return "main";
     }

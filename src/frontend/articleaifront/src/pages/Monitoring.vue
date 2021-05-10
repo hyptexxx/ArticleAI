@@ -8,6 +8,7 @@
             q-card-section
               .text-h6.text-black Мониторинг трендов актуальностей классов
               .text-subtitle2.text-black Графики динамики изменения актуальностей классов с интервалом в 24 часа.
+            q-separator(spaced='')
             q-card-section.bg-indigo.text-white
               .text-subtitle2.text-white Фильтрация результатов поиска
             q-card-section.flex(style="justify-content: space-evenly;" )

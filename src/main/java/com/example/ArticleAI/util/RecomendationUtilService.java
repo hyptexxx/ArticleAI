@@ -3,6 +3,7 @@ package com.example.ArticleAI.util;
 import com.example.ArticleAI.models.ClassDistance;
 import com.example.ArticleAI.models.KeywordClass;
 import com.example.ArticleAI.models.NlpResponse;
+import com.example.ArticleAI.repository.AppSettingsRepository;
 import com.example.ArticleAI.repository.ClassesRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor(onConstructor = @__(@Autowired))
 public class RecomendationUtilService {
     private final ClassesRepository classesRepository;
+    private final AppSettingsRepository appSettingsRepository;
 
     public static List<String> getKeywordNams(List<NlpResponse> filteredKeywords) {
         return filteredKeywords.stream()
@@ -50,15 +52,15 @@ public class RecomendationUtilService {
                 .sum();
     }
 
-    public static double getActualityByMax(List<ClassDistance> classDistances) {
+    public double getActualityByMax(List<ClassDistance> classDistances) {
         ClassDistance maxClassActuality = classDistances.stream()
                 .max(Comparator.comparing(ClassDistance::getClassActuality))
                 .orElseThrow(IllegalArgumentException::new);
 
         double sum = maxClassActuality.getClassActuality();
         for (ClassDistance classDistance : classDistances) {
-            if (!classDistance.getClassActuality().equals(maxClassActuality.getClassActuality())) { //todo если будет много одинаковых актуальностей?
-                sum += classDistance.getClassActuality() * 0.99;
+            if (!classDistance.getClassActuality().equals(maxClassActuality.getClassActuality())) {
+                sum += classDistance.getClassActuality() * appSettingsRepository.getAll().getCoefficient();
             }
         }
 

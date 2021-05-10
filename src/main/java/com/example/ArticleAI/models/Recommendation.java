@@ -13,4 +13,8 @@ public class Recommendation {
     double actuality;
     List<TopSubject> topSubjects;
     List<String> hasTags;
+    List<NlpResponse> payload;
+    List<KeywordClass> classesActuality;
+    List<YakeResponse> yakeResponse;
+    List<ClassDistance> keywordActuality;
 }
