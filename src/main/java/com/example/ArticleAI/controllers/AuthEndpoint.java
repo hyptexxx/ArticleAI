@@ -8,6 +8,7 @@ import com.example.ArticleAI.models.UtmoUser;
 import com.example.ArticleAI.repository.UserRepository;
 import com.example.ArticleAI.service.AuthService;
 import com.example.ArticleAI.service.AuthServiceProvider;
+import com.example.ArticleAI.service.kafka.NlpKafkaSender;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -34,6 +36,7 @@ public class AuthEndpoint {
     private final ClientConfigFlow<UtmoUser> ClientConfigFlow;
     private final UserRepository userRepository;
     private final AuthService authService;
+    private final NlpKafkaSender nlpKafkaSender;
 
     @PostMapping("/api/auth")
     public ResponseEntity<AuthResponse<UtmoUser>> doAuth(@RequestParam("login") String login,
@@ -93,6 +96,14 @@ public class AuthEndpoint {
 
         SecurityContextLogoutHandler securityContextHolder = new SecurityContextLogoutHandler();
         securityContextHolder.logout(request, response, null);
+    }
+
+    @PostMapping("/test")
+    public ResponseEntity<Object> test(@RequestParam("test") String testMsg) {
+        nlpKafkaSender.send(testMsg);
+        return ResponseEntity
+                .ok()
+                .body("w353456");
     }
 
     @PostMapping("/api/heartbeat")
